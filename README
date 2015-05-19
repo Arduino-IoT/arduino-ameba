@@ -1,0 +1,11 @@
+Prebuild : 
+
+  Install relative package, e.g. ant
+
+
+Procedure:
+
+ (1) cd ./build ; ant run
+
+
+ 
