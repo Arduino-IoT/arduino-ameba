@@ -40,17 +40,25 @@ SECTIONS
     KEEP(*(.image1.validate.rodata*))
     KEEP(*(.infra.ram.data*))
     KEEP(*(.timer.ram.data*))
+    KEEP(*(.cutb.ram.data*))
+    KEEP(*(.cutc.ram.data*))
     KEEP(*(.hal.ram.data*))
     __image1_bss_start__ = .;
     *(.hal.flash.data*)    
     *(.hal.sdrc.data*)    
+    *(.hal.gpio.data*)    
+    *(.fwu.data*)    
     __image1_bss_end__ = .;
+    __ram_image1_data_end__ = .;
     
     *(.hal.ram.text*)    
     *(.hal.flash.text*)    
     *(.hal.sdrc.text*)    
-    *(.rodata*)  
+    *(.rodata .rodata* .gnu.linkonce.r.*)
     *(.infra.ram.text*)
+    *(.hal.gpio.text*)
+    *(.fwu.rodata*)
+    *(.fwu.text*)
     __ram_image1_text_end__ = .;
   } > BD_RAM
 
@@ -61,6 +69,7 @@ SECTIONS
     KEEP(*(SORT(.image2.ram.data*)))
     __image2_validate_code__ = .;
     KEEP(*(.image2.validate.rodata*))    
+    
   } > BD_RAM
 
   .ram_image2.text :
@@ -76,20 +85,17 @@ SECTIONS
 
   } > BD_RAM
 
-    .ARM.extab : 
-    {
-        *(.ARM.extab* .gnu.linkonce.armextab.*)
-    } > BD_RAM
 
-	.ram.data :
+	.ram.data : 
     {
         __data_start__ = .;
+        _sdata = .;
         . = ALIGN(4);
         *(vtable)
 
         . = ALIGN(4);
         *(.data .data.*);
-        
+
 
         . = ALIGN(4);
         /* preinit data */
@@ -97,18 +103,18 @@ SECTIONS
         KEEP(*(.preinit_array))
         PROVIDE (__preinit_array_end = .);
 
+	 /* init data */
+	. = ALIGN(4);
+	KEEP(*(.init))
 
         /* init data */
-
-        . = ALIGN(4);
-        KEEP(*(.init))
-
         . = ALIGN(4);
         PROVIDE (__init_array_start = .);
         KEEP(*(SORT(.init_array.*)))
         KEEP(*(.init_array))
         PROVIDE (__init_array_end = .);
 
+	/* .ctors */
         . = ALIGN(0x4);
         KEEP (*crtbegin.o(.ctors))
         KEEP(*crtbegin?.o(.ctors))
@@ -117,10 +123,10 @@ SECTIONS
         KEEP (*crtend.o(.ctors))
         KEEP(*(.ctors))
 
+	 /* finit data */
+	. = ALIGN(4);
+	KEEP(*(.fini))
 
-        /* finit data */
-        . = ALIGN(4);
-        KEEP(*(.fini))
 
         . = ALIGN(4);
         PROVIDE (__fini_array_start = .);
@@ -128,40 +134,57 @@ SECTIONS
         KEEP(*(.fini_array))
         PROVIDE (__fini_array_end = .);
 
+	/* .dtors */
         . = ALIGN(4);
         KEEP (*crtbegin.o(.dtors))
         KEEP(*crtbegin?.o(.dtors))
         KEEP(*(EXCLUDE_FILE(*crtend?.o *crtend.o) .dtors))
         KEEP(*(SORT(.dtors.*)))
         KEEP(*crtend.o(.dtors))
-        KEEP(*(.dtors))        
+        KEEP(*(.dtors))
+
+	KEEP(*(.eh_frame*))
+
+	KEEP(*(.jcr*))
 
     } > BD_RAM
 
+
+    .ARM.extab : 
+    {
+        *(.ARM.extab* .gnu.linkonce.armextab.*)
+    } > BD_RAM
+
+
      . = ALIGN(4);
+    __exidx_start = .;
     /* .ARM.exidx is sorted, so has to go in its own output section.  */
     PROVIDE_HIDDEN (__exidx_start = .);
     .ARM.exidx : AT(__exidx_start)
     {
-      *(.ARM.exidx* .gnu.linkonce.armexidx.*)
+        *(.ARM.exidx* .gnu.linkonce.armexidx.*)
 
+           /* All data end */
         . = ALIGN(4);
-        /* All data end */
+        _edata = .;
         __data_end__ = .;
 	 __ram_image2_text_end__ = .;    
-
+     
     } > BD_RAM
+    
     PROVIDE_HIDDEN (__exidx_end = .);
+    __exidx_end = .;
 
+    . = ALIGN(4);
+    __etext = .;
+    _sidata = .;
 
   .sdr_data : 
   {
     __sdram_data_start__ = .;
     *(.sdram.data*)
     __sdram_data_end__ = .;
-    
   } > SDRAM_RAM
-
 
   
     /* .bss section which is used for uninitialized data */
@@ -174,7 +197,7 @@ SECTIONS
         
         *(.bss .bss.*)
         *(COMMON)
-	 *(.bdsram.data*)
+	    *(.bdsram.data*)
         
         . = ALIGN(4);
         _ebss = . ;
@@ -182,7 +205,7 @@ SECTIONS
         __bss_end__ = .;    
     } > BD_RAM
 
-	.bf_data (NOLOAD): 
+	.bf_data (NOLOAD):
 	{
 	__buffer_data_start__ = .;
 	*(.bfsram.data*)
@@ -190,36 +213,33 @@ SECTIONS
 
 	} > BD_RAM
 
-	 .heap (NOLOAD):
-	 {
-		__end__ = .;
-		end = __end__;
-		*(.heap*)
-		__HeapLimit = .;
-	 } > BD_RAM
-
-
-    /* stack section */
-    . = ALIGN(8);
-    PROVIDE( _sstack = .);
-    PROVIDE(__StackLimit = _sstack);
-
-
-    .stack_dummy (NOLOAD) : AT(_sstack)
+    .heap (COPY):
     {
-        . = ALIGN(8);
-        . = . + STACK_SIZE;
-        . = ALIGN(8);
+        __end__ = .;
+        end = __end__;
+        *(.heap*)
+        __HeapLimit = .;
     } > BD_RAM
 
-        PROVIDE(_estack = .);
-	PROVIDE(__StackTop = _estack);
-	PROVIDE(__stack = __StackTop);
 
 
+    .stack_dummy (COPY):
+    {
+	  . = ALIGN(8);
+    	 _sstack = .;
+    	 __StackLimit = _sstack;
+        *(.stack*)
+    } > BD_RAM
 
-    . = ALIGN(4);
-    _end = . ;
+    /* Set stack top to end of RAM, and stack limit move down by
+     * size of stack_dummy section */
+    __StackTop = ORIGIN(BD_RAM) + LENGTH(BD_RAM)-7;
+	_estack = __StackTop;
+    __StackLimit = __StackTop - SIZEOF(.stack_dummy);
+    PROVIDE(__stack = __StackTop);
+    
+    /* Check if data + heap + stack exceeds RAM limit */
+    ASSERT(__StackLimit >= __HeapLimit, "region RAM overflowed with stack")
 
 
 }

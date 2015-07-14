@@ -116,6 +116,7 @@ used throughout the whole project.
 
 //NeoJou
 #define TOOLCHAIN_GCC
+#define __thumb2__
 
 // The stack space occupied is mainly dependent on the underling C standard library
 #if defined(TOOLCHAIN_GCC) || defined(TOOLCHAIN_ARM_STD)

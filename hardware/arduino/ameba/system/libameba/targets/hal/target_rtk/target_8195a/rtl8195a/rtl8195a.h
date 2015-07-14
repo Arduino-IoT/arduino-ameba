@@ -25,7 +25,6 @@
 #include "hal_spi_flash.h"
 #include "hal_timer.h"
 #include "hal_util.h"
-#include "hal_efuse.h"
 #include "diag.h"
 
 /* ----------------------------------------------------------------------------
@@ -112,6 +111,35 @@
 #include "hal_nfc.h"
 #include "rtl8195a_nfc.h"
 #endif
+
+
+// firmware information, located at the header of Image2
+#define FW_VERSION          (0x0100)
+#define FW_SUBVERSION       (0x0001)
+#define FW_CHIP_ID          (0x8195)
+#define FW_CHIP_VER         (0x01)
+#define FW_BUS_TYPE         (0x01)          // the iNIC firmware type: USB/SDIO
+#define FW_INFO_RSV1        (0x00)          // the firmware information reserved
+#define FW_INFO_RSV2        (0x00)          // the firmware information reserved
+#define FW_INFO_RSV3        (0x00)          // the firmware information reserved
+#define FW_INFO_RSV4        (0x00)          // the firmware information reserved
+
+#define FLASH_RESERVED_DATA_BASE		0x8000  // reserve 32K for Image1
+#define FLASH_SYSTEM_DATA_ADDR			0x9000  // reserve 32K+4K for Image1 + Reserved data
+// Flash Map for Calibration data
+#define FLASH_CAL_DATA_BASE				0xA000
+#define FLASH_CAL_DATA_ADDR(_offset)	(FLASH_CAL_DATA_BASE + _offset)
+#define FLASH_CAL_DATA_SIZE				0x1000
+#define FLASH_SECTOR_SIZE				0x1000
+// SPIC Calibration Data
+#define FLASH_SPIC_PARA_OFFSET          0x80
+#define FLASH_SPIC_PARA_BASE            (FLASH_SYSTEM_DATA_ADDR+FLASH_SPIC_PARA_OFFSET)
+// SDRC Calibration Data
+#define FLASH_SDRC_PARA_OFFSET          0x180
+#define FLASH_SDRC_PARA_BASE            (FLASH_SYSTEM_DATA_ADDR+FLASH_SDRC_PARA_OFFSET)
+// ADC Calibration Data
+#define FLASH_ADC_PARA_OFFSET           0x200
+#define FLASH_ADC_PARA_BASE             (FLASH_SYSTEM_DATA_ADDR+FLASH_ADC_PARA_OFFSET)
 
 
 #endif //_HAL_8195A_H_

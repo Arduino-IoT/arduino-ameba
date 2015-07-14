@@ -298,8 +298,8 @@ typedef	    __kernel_ssize_t	SSIZE_T;
 // Byte Swapping routine.
 //
 #define EF1Byte	(u8)
-#define EF2Byte 	le16_to_cpu
-#define EF4Byte	le32_to_cpu
+#define EF2Byte	rtk_le16_to_cpu
+#define EF4Byte	rtk_le32_to_cpu
 
 //
 // Read LE format data from memory

@@ -67,6 +67,9 @@
 #define HAL_FLASH_TEXT_SECTION                         \
         SECTION(".hal.flash.text")
 
+#define HAL_FLASH_KPATTERN_SECTION                         \
+        SECTION(".hal.kpattern.rodata")
+
 #define HAL_FLASH_DATA_SECTION                         \
         SECTION(".hal.flash.data")
 
@@ -76,6 +79,12 @@
 #define HAL_SDRC_DATA_SECTION                         \
         SECTION(".hal.sdrc.data")
 
+#define HAL_CUT_B_RAM_DATA_SECTION                    \
+        SECTION(".cutb.ram.data")
+
+#define HAL_CUT_C_RAM_DATA_SECTION                    \
+        SECTION(".cutc.ram.data")
+
 #define HAL_RAM_DATA_SECTION                         \
         SECTION(".hal.ram.data")
 
@@ -84,6 +93,41 @@
 
 #define HAL_ROM_OP_SECTION                         \
         SECTION(".halop.rom.rodata")
+
+#define HAL_GPIO_TEXT_SECTION           \
+        SECTION(".hal.gpio.text")
+
+#define HAL_GPIO_DATA_SECTION                    \
+        SECTION(".hal.gpio.data")
+
+#define FWU_DATA_SECTION                    \
+        SECTION(".fwu.data")
+
+#define FWU_RODATA_SECTION                    \
+            SECTION(".fwu.rodata")
+
+#define FWU_TEXT_SECTION                    \
+        SECTION(".fwu.text")
+
+//3 C-Cut ROM Patch/New functions location
+#define C_CUT_ROM_TEXT_SECTION                         \
+        SECTION(".cutc.rom.text")
+
+#define C_CUT_ROM_RODATA_SECTION                         \
+        SECTION(".cutc.rom.rodata")
+
+#define C_CUT_ROM_DATA_SECTION                         \
+        SECTION(".cutc.ram.data")
+//3 No ROM code changed for D_Cut
+//3 E-Cut ROM Patch/New functions location
+#define E_CUT_ROM_TEXT_SECTION                         \
+        SECTION(".cute.rom.text")
+
+#define E_CUT_ROM_RODATA_SECTION                         \
+        SECTION(".cute.rom.rodata")
+
+#define E_CUT_ROM_DATA_SECTION                         \
+        SECTION(".cute.ram.data")
 
 //3 Store the Image 1 validate code
 #define IMAGE1_VALID_PATTEN_SECTION                   \
@@ -149,6 +193,10 @@
 //3 SDIO Section
 #define SECTION_SDIO_RAM
 #define SECTION_SDIO_ROM
+#define SDIO_ROM_BSS_SECTION                        \
+        SECTION(".sdio.rom.bss")
+#define SDIO_ROM_TEXT_SECTION                       \
+            SECTION(".sdio.rom.text")
 
 //3 SRAM Config Section
 #define SRAM_BD_DATA_SECTION                        \
@@ -175,6 +223,29 @@
 
 #define START_RAM_FUN_E_SECTION                         \
         SECTION(".start.ram.data.e")
+
+//Non-Flash Boot Section
+#define NON_FLASH_BOOT_DATA_SECTION					\
+        SECTION(".nonflash.data")
+#define NON_FLASH_BOOT_HEAP_SECTION					\
+        SECTION(".nonflash.heap")
+
+// USB OTG Section
+#define OTG_ROM_BSS_SECTION                             \
+        SECTION(".otg.rom.bss")
+        
+#define OTG_ROM_TEXT_SECTION                            \
+        SECTION(".otg.rom.text")
+
+#define OTG_ROM_DATA_SECTION                      \
+        SECTION(".otg.rom.rodata")
+        
+#define START_OTG_RAM_FUN_SECTION                       \
+        SECTION(".ram.otg.data.a")
+
+#define START_OTG_RAM_DATA_SECTION                      \
+        SECTION(".ram.otg.data.b")
+
 
 #define IMAGE2_START_RAM_FUN_SECTION                     \
             SECTION(".image2.ram.data")
@@ -208,5 +279,15 @@
         
 #define LIBC_RAM_BSS_SECTION                         \
         SECTION(".libc.ram.bss")
-        
+
+//3 SSL  Section
+#define SSL_ROM_TEXT_SECTION                      \
+        SECTION(".ssl.rom.text")
+
+#define SSL_ROM_DATA_SECTION                      \
+        SECTION(".ssl.rom.rodata")
+
+#define SSL_RAM_MAP_SECTION             \
+        SECTION(".ssl_ram_map")
+
 #endif //_SECTION_CONFIG_H_
