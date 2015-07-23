@@ -27,11 +27,12 @@
 #include "netif/etharp.h"
 
 #include "wifi_intfs.h"
-
+#include "wl_definitions.h"
 
 class WiFiDrv1
 {
 public:
+
 
 	void* padapter;
 	void* pnetif;
@@ -56,6 +57,11 @@ public:
      */
     uint8_t getScanNetworks();
 
+	char* getSSIDNetoworks(uint8_t networkItem);
+	int32_t getRSSINetoworks(uint8_t networkItem);
+	
+	uint8_t getEncTypeNetowrks(uint8_t networkItem);
+
     /* Start Wifi connection with passphrase
      * the most secure supported mode will be automatically selected
      *
@@ -68,6 +74,7 @@ public:
      */
    int8_t wifiSetPassphrase(char* ssid, uint8_t ssid_len, const char *passphrase, const uint8_t len);
 
+   uint8_t* getMacAddress();
 
 };
 

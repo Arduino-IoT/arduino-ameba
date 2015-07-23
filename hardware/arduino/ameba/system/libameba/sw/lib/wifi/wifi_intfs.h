@@ -88,6 +88,7 @@ extern wl_err_t wl_wifi_connect(
 	const char*		password,
 	const int		password_len);
 
+extern void wl_wifi_get_mac_address(void* padapter1, u8* mac_addr);
 
 //GTK
 sint wl_set_key(void* padapter1, void* psecuritypriv1, sint keyid, u8 set_tx);
@@ -101,6 +102,9 @@ extern u8 wl_set_stakey(void* padapter1, u8 *psta, u8 unicast_key);
 
 extern int wl_netif_tx(struct sk_buff** skb);
 extern void wl_netif_rx(void* skb1);
+
+// SCAN queue
+extern int wl_wifi_get_scan_networks(void* padapter1, char ssid_list[][32], int32_t rssi_list[], uint8_t encr_list[], int max_list_num );
 
 
 #ifdef __cplusplus

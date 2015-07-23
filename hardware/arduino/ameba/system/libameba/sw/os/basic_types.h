@@ -142,6 +142,32 @@ typedef unsigned int            BOOL;
 #define UINT                    uint32_t
 #define ULONG                   uint32_t	
 
+
+#define u1Byte		u8
+#define pu1Byte 		u8* 
+
+#define u2Byte		u16
+#define pu2Byte 		u16*		
+
+#define u4Byte		u32
+#define pu4Byte 		u32*	
+
+#define u8Byte		u64
+#define pu8Byte 		u64*
+
+#define s1Byte		s8
+#define ps1Byte 		s8* 
+
+#define s2Byte		s16
+#define ps2Byte 		s16*	
+
+#define s4Byte		s32
+#define ps4Byte 		s32*	
+
+#define s8Byte		s64
+#define ps8Byte 		s64*	
+
+
 typedef struct { volatile int counter; } atomic_t;
 
 typedef enum _RTK_STATUS_ {

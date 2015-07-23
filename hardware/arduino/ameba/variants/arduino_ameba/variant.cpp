@@ -37,7 +37,7 @@ analogin_t   adc3;
 #endif
 
 #include "wire.h"
-
+#include "WiFi1.h"
 
 
 #ifdef __cplusplus
@@ -145,6 +145,12 @@ void init_hal_dac(void)
     DAC0.begin(0);
 }
 
+// WiFi
+
+void init_hal_wifi(void)
+{
+	WiFi1.init();
+}
 // ----------------------------------------------------------------------------
 
 void serialEventRun(void)
@@ -169,6 +175,7 @@ void init( void )
 	init_hal_i2c();
 	init_hal_adc();
 	init_hal_dac();
+	init_hal_wifi();
 
 	DiagPrintf("wait for 5 sec.\n");
 	delay(5000);

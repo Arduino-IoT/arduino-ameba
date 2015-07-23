@@ -21,6 +21,7 @@
 
 #include "WiFi1.h"
 #include "wifi_drv1.h"
+#include "wl_definitions.h"
 
 WiFiClass1::WiFiClass1()
 {
@@ -39,12 +40,7 @@ int8_t WiFiClass1::scanNetworks()
 
 	if ( wiFiDrv1.startScanNetworks() == WL_FAILURE)
 		return WL_FAILURE;
- 	do
- 	{
- 		delay(2000);
- 		numOfNetworks = wiFiDrv1.getScanNetworks();
- 	}
-	while (( numOfNetworks == 0)&&(--attempts>0));
+ 	numOfNetworks = wiFiDrv1.getScanNetworks();
 	return numOfNetworks;
 }
 
@@ -70,6 +66,30 @@ int WiFiClass1::begin(char* ssid, const char *passphrase)
 
 }
 
+uint8_t* WiFiClass1::macAddress(uint8_t* mac)
+{
+	uint8_t* _mac = wiFiDrv1.getMacAddress();
+	for (int i=0; i<WL_MAC_ADDR_LENGTH; i++)
+		mac[i] = _mac[WL_MAC_ADDR_LENGTH-i-1];
+    return mac;
+}
+
+char* WiFiClass1::SSID(uint8_t networkItem)
+{
+	return wiFiDrv1.getSSIDNetoworks(networkItem);
+}
+
+
+int32_t WiFiClass1::RSSI(uint8_t networkItem)
+{
+	return wiFiDrv1.getRSSINetoworks(networkItem);
+}
+
+
+uint8_t WiFiClass1::encryptionType(uint8_t networkItem)
+{
+    return wiFiDrv1.getEncTypeNetowrks(networkItem);
+}
 
 
 WiFiClass1 WiFi1;

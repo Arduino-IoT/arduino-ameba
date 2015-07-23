@@ -50,6 +50,14 @@ public:
 	int begin(char* ssid);
 	int begin(char* ssid, const char *passphrase);
 
+	uint8_t* macAddress(uint8_t* mac);
+
+    char* SSID(uint8_t networkItem);
+	
+	int32_t RSSI(uint8_t networkItem);
+
+	uint8_t encryptionType(uint8_t networkItem);
+
 };
 
 extern WiFiClass1 WiFi1;

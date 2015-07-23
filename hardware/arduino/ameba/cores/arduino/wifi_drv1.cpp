@@ -32,15 +32,20 @@
 #include "rt_os_service.h"
 
 #include "wifi_intfs.h"
+#include "wl_definitions.h"
 
 #include "wifi_drv1.h"
 
 
+// scan
+static char _networkSsid[WL_NETWORKS_LIST_MAXNUM][WL_SSID_MAX_LENGTH];
+static int32_t _networkRssi[WL_NETWORKS_LIST_MAXNUM];
+static uint8_t _networkEncr[WL_NETWORKS_LIST_MAXNUM];
+
 
 
 /* TCP/IP and Network Interface Initialisation */
-static char mac_addr[19];
-//static char ip_addr[17] = "\0";
+static uint8_t _mac[6];
 static char gateway[17] = "\0";
 static char networkmask[17] = "\0";
 static bool use_dhcp = false;
@@ -62,30 +67,12 @@ static bool if_enabled = false;
 
 
 
-// TODO:  API to set mac address
-// Hal_EfuseParseMACAddr_8195A
-static void set_mac_address(char *mac) {
-	mac[0] = 0x00;
-	mac[1] = 0xE0;
-	mac[2] = 0x4C;
-	mac[3] = 0xB7;
-	mac[4] = 0x23;
-	mac[5] = 0x00;
-}
-
-
-
-
-
-
-
 // Public Methods
 
 
 void WiFiDrv1::wifiDriverInit()
 {
 	use_dhcp = true;
-	set_mac_address(mac_addr);
 	wl_wifi_init(&padapter, &pnetif);
 }
 
@@ -94,7 +81,6 @@ void WiFiDrv1::wifiDriverInit()
 int8_t WiFiDrv1::startScanNetworks()
 {
 	Serial.println("WiFiDrv1.startScanNetworks()");
-
 	wl_wifi_scan(padapter);
 	return WL_SUCCESS;
 }
@@ -102,8 +88,9 @@ int8_t WiFiDrv1::startScanNetworks()
 
 uint8_t WiFiDrv1::getScanNetworks()
 {
-	Serial.println("WiFiDrv1.getScanNetworks()");
-	return 1;
+	uint8_t num;
+	num = wl_wifi_get_scan_networks(padapter, _networkSsid, _networkRssi, _networkEncr, WL_NETWORKS_LIST_MAXNUM);
+	return num;
 
 }
 
@@ -121,6 +108,37 @@ int8_t WiFiDrv1::wifiSetPassphrase(char* ssid, uint8_t ssid_len, const char *pas
     return ret;
 }
 
+uint8_t* WiFiDrv1::getMacAddress()
+{
+	wl_wifi_get_mac_address(padapter, (uint8_t*)_mac);
+
+	return _mac;
+}
+
+char* WiFiDrv1::getSSIDNetoworks(uint8_t networkItem)
+{
+	if (networkItem >= WL_NETWORKS_LIST_MAXNUM)
+		return NULL;
+
+	return _networkSsid[networkItem];
+}
+
+int32_t WiFiDrv1::getRSSINetoworks(uint8_t networkItem)
+{
+	if (networkItem >= WL_NETWORKS_LIST_MAXNUM)
+		return NULL;
+
+	return _networkRssi[networkItem];
+}
+
+
+uint8_t WiFiDrv1::getEncTypeNetowrks(uint8_t networkItem)
+{
+	if (networkItem >= WL_NETWORKS_LIST_MAXNUM)
+		return NULL;
+
+	return _networkEncr[networkItem];
+}
 
 
 WiFiDrv1 wiFiDrv1;
