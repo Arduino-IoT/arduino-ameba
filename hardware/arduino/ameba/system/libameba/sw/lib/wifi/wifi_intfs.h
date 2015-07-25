@@ -106,6 +106,23 @@ extern void wl_netif_rx(void* skb1);
 // SCAN queue
 extern int wl_wifi_get_scan_networks(void* padapter1, char ssid_list[][32], int32_t rssi_list[], uint8_t encr_list[], int max_list_num );
 
+extern int wl_wifi_get_connection_status(void* padapter1);
+
+extern void wl_wifi_get_network_data(uint8_t *ip, uint8_t *mask, uint8_t *gw_ip);
+
+
+// connected AP status
+
+extern void wl_wifi_get_current_ssid(void* padapter1, char* ssid);
+
+extern void wl_wifi_get_current_bssid(void* padapter1, u8* bssid);
+
+extern long wl_wifi_get_current_rssi(void* padapter1);
+
+extern uint8_t wl_wifi_get_current_encType(void* padapter1);
+
+extern wl_err_t wl_wifi_get_host_by_name(void* padapter1, const char *aHostName, uint32_t *paddr);
+
 
 #ifdef __cplusplus
 }
