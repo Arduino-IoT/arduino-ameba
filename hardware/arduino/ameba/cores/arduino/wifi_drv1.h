@@ -29,8 +29,14 @@
 #include "wifi_intfs.h"
 #include "wl_definitions.h"
 
+#include "IPAddress.h"
+
 class WiFiDrv1
 {
+protected: 
+	
+	void getNetworkData(uint8_t *ip, uint8_t *mask, uint8_t *gwip);
+		
 public:
 
 
@@ -75,6 +81,71 @@ public:
    int8_t wifiSetPassphrase(char* ssid, uint8_t ssid_len, const char *passphrase, const uint8_t len);
 
    uint8_t* getMacAddress();
+
+   /*
+	* Get the interface IP address.
+	*
+	* return: copy the ip address value in IPAddress object
+	*/
+   void getIpAddress(IPAddress& ip);
+   
+   /*
+	* Get the interface subnet mask address.
+	*
+	* return: copy the subnet mask address value in IPAddress object
+	*/
+   void getSubnetMask(IPAddress& mask);
+   
+   /*
+	* Get the gateway ip address.
+	*
+	* return: copy the gateway ip address value in IPAddress object
+	*/
+   void getGatewayIP(IPAddress& ip);
+
+   /*
+	* Return the current SSID associated with the network
+	*
+	* return: ssid string
+	*/
+   char* getCurrentSSID();
+   
+   /*
+	* Return the current BSSID associated with the network.
+	* It is the MAC address of the Access Point
+	*
+	* return: pointer to uint8_t array with length WL_MAC_ADDR_LENGTH
+	*/
+   uint8_t* getCurrentBSSID();
+
+   /*
+	* Return the current RSSI /Received Signal Strength in dBm)
+	* associated with the network
+	*
+	* return: signed value
+	*/
+   int32_t getCurrentRSSI();
+
+   /*
+	* Return the Encryption Type associated with the network
+	*
+	* return: one value of wl_enc_type enum
+	*/
+   uint8_t getCurrentEncryptionType();
+   
+   
+   uint8_t getConnectionStatus();
+
+   
+   /*
+	* Return Connection status.
+	*
+	* return: one of the value defined in wl_status_t
+	*/
+   uint8_t status();
+
+   
+   int getHostByName(const char* aHostname, IPAddress& aResult);
 
 };
 

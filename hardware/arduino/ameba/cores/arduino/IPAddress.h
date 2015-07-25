@@ -27,6 +27,7 @@
 
 class IPAddress : public Printable {
 private:
+	char _ipAddress[17];
     union {
 	uint8_t bytes[4];  // IPv4 address
 	uint32_t dword;
@@ -58,6 +59,9 @@ public:
     // Overloaded copy operators to allow initialisation of IPAddress objects from other types
     IPAddress& operator=(const uint8_t *address);
     IPAddress& operator=(uint32_t address);
+
+	//NeoJou
+	char * get_address(void);
 
     virtual size_t printTo(Print& p) const;
 

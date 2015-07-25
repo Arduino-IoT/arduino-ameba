@@ -42,10 +42,16 @@ static char _networkSsid[WL_NETWORKS_LIST_MAXNUM][WL_SSID_MAX_LENGTH];
 static int32_t _networkRssi[WL_NETWORKS_LIST_MAXNUM];
 static uint8_t _networkEncr[WL_NETWORKS_LIST_MAXNUM];
 
+//
+static char 	_ssid[WL_SSID_MAX_LENGTH];
+static uint8_t	_bssid[WL_MAC_ADDR_LENGTH];
+static uint8_t _mac[WL_MAC_ADDR_LENGTH];
+static uint8_t	_localIp[WL_IPV4_LENGTH];
+static uint8_t	_subnetMask[WL_IPV4_LENGTH];
+static uint8_t	_gatewayIp[WL_IPV4_LENGTH];
 
 
 /* TCP/IP and Network Interface Initialisation */
-static uint8_t _mac[6];
 static char gateway[17] = "\0";
 static char networkmask[17] = "\0";
 static bool use_dhcp = false;
@@ -64,6 +70,10 @@ static bool if_enabled = false;
 // Private Methods
 
 //
+void WiFiDrv1::getNetworkData(uint8_t *ip, uint8_t *mask, uint8_t *gwip)
+{
+	wl_wifi_get_network_data(ip, mask, gwip);
+}
 
 
 
@@ -115,6 +125,48 @@ uint8_t* WiFiDrv1::getMacAddress()
 	return _mac;
 }
 
+void WiFiDrv1::getIpAddress(IPAddress& ip)
+{
+	getNetworkData(_localIp, _subnetMask, _gatewayIp);
+	ip = _localIp;
+}
+
+ void WiFiDrv1::getSubnetMask(IPAddress& mask)
+ {
+	getNetworkData(_localIp, _subnetMask, _gatewayIp);
+	mask = _subnetMask;
+ }
+
+ void WiFiDrv1::getGatewayIP(IPAddress& ip)
+ {
+	getNetworkData(_localIp, _subnetMask, _gatewayIp);
+	ip = _gatewayIp;
+ }
+
+char* WiFiDrv1::getCurrentSSID()
+{
+	wl_wifi_get_current_ssid(padapter, _ssid);
+    return _ssid;
+}
+
+uint8_t* WiFiDrv1::getCurrentBSSID()
+{
+	wl_wifi_get_current_bssid(padapter, _bssid);
+    return _bssid;
+}
+
+int32_t WiFiDrv1::getCurrentRSSI()
+{
+	return wl_wifi_get_current_rssi(padapter);
+}
+
+uint8_t WiFiDrv1::getCurrentEncryptionType()
+{
+
+	return wl_wifi_get_current_encType(padapter);
+}
+
+
 char* WiFiDrv1::getSSIDNetoworks(uint8_t networkItem)
 {
 	if (networkItem >= WL_NETWORKS_LIST_MAXNUM)
@@ -138,6 +190,27 @@ uint8_t WiFiDrv1::getEncTypeNetowrks(uint8_t networkItem)
 		return NULL;
 
 	return _networkEncr[networkItem];
+}
+
+uint8_t WiFiDrv1::getConnectionStatus()
+{
+
+    return wl_wifi_get_connection_status(padapter); 
+}
+
+
+
+int WiFiDrv1::getHostByName(const char* aHostname, IPAddress& aResult)
+{
+	uint32_t  _ipAddr;
+	IPAddress dummy(0xFF,0xFF,0xFF,0xFF);
+	int result = 0;
+
+
+	result = wl_wifi_get_host_by_name(padapter, aHostname, &_ipAddr);
+	if ( result == WL_SUCCESS )
+		aResult = _ipAddr;
+	return result;
 }
 
 

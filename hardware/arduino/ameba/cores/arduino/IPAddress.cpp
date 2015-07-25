@@ -21,6 +21,15 @@
 #include <IPAddress.h>
 #include <Print.h>
 
+#include <stdio.h>
+#include <WString.h>
+
+//NeoJou
+extern "C" {
+#define _LONG_CALL_     __attribute__ ((long_call))
+extern _LONG_CALL_ uint32_t DiagPrintf(const char *fmt, ...);
+}
+
 IPAddress::IPAddress()
 {
     _address.dword = 0;
@@ -32,6 +41,8 @@ IPAddress::IPAddress(uint8_t first_octet, uint8_t second_octet, uint8_t third_oc
     _address.bytes[1] = second_octet;
     _address.bytes[2] = third_octet;
     _address.bytes[3] = fourth_octet;
+	
+	
 }
 
 IPAddress::IPAddress(uint32_t address)
@@ -59,6 +70,20 @@ IPAddress& IPAddress::operator=(uint32_t address)
 bool IPAddress::operator==(const uint8_t* addr) const
 {
     return memcmp(addr, _address.bytes, sizeof(_address.bytes)) == 0;
+}
+
+char* IPAddress::get_address(void)
+{
+	String ipAddrStr(_address.bytes[0]);
+	ipAddrStr.concat('.');
+	ipAddrStr.concat(_address.bytes[1]);
+	ipAddrStr.concat('.');
+	ipAddrStr.concat(_address.bytes[2]);
+	ipAddrStr.concat('.');
+	ipAddrStr.concat(_address.bytes[3]);
+	ipAddrStr.toCharArray(_ipAddress, sizeof(_ipAddress));
+	
+	return _ipAddress;
 }
 
 size_t IPAddress::printTo(Print& p) const
