@@ -1,0 +1,51 @@
+build.arch = AMEBA
+build.board = SAM_DUE
+build.core = arduino
+build.core.path = D:\Workspace\arduino-ameba\build\windows\work\hardware\arduino\ameba\cores\arduino
+build.extra_flags = -D__SAM3X8E__ -mthumb {build.usb_flags}
+build.f_cpu = 84000000L
+build.ldscript = linker_scripts/gcc/rlx8195a.ld
+build.mcu = cortex-m3
+build.path = D:\Workspace\arduino-ameba\build\windows\work\build
+build.pid = 0x003e
+build.project_name = Blink.cpp
+build.system.path = D:\Workspace\arduino-ameba\build\windows\work\hardware\arduino\ameba\system
+build.usb_flags = -DUSB_VID={build.vid} -DUSB_PID={build.pid} -DUSBCON '-DUSB_MANUFACTURER={build.usb_manufacturer}' '-DUSB_PRODUCT={build.usb_product}'
+build.usb_manufacturer = "Unknown"
+build.usb_product = "Arduino Ameba"
+build.variant = arduino_ameba
+build.variant.path = D:\Workspace\arduino-ameba\build\windows\work\hardware\arduino\ameba\variants\arduino_ameba
+build.variant_system_lib = librt_ameba_gcc_rel.a
+build.verbose = true
+build.vid = 0x2341
+build.warn_data_percentage = 75
+compiler.S.flags = -c -g -x assembler-with-cpp
+compiler.ameba.c.flags = {compiler.ameba.c.include1} {compiler.ameba.c.include2} {compiler.ameba.c.include3} {compiler.ameba.c.include4}
+compiler.ameba.c.include1 = "-I{compiler.ameba.libpath}/include" "-I{compiler.ameba.libpath}/targets/cmsis" "-I{compiler.ameba.libpath}/sw/lib/sw_lib/mbed/hal"
+compiler.ameba.c.include2 = "-I{compiler.ameba.libpath}/sw/lib/net/lwip" "-I{compiler.ameba.libpath}/sw/lib/net/lwip/include"
+compiler.ameba.c.include3 = "-I{compiler.ameba.libpath}/sw/lib/net/lwip/include/ipv4" "-I{compiler.ameba.libpath}/sw/lib/net/lwip-sys" "-I{compiler.ameba.libpath}/sw/lib/wifi"
+compiler.ameba.c.include4 = "-I{compiler.ameba.libpath}/sw/os" "-I{compiler.ameba.libpath}/sw/os/os_dep/include" "-I{compiler.ameba.libpath}/sw/os/rtx/include" "-I{compiler.ameba.libpath}/sw/lib/rtl_std_lib/include"
+compiler.ameba.libpath = {build.system.path}/libameba
+compiler.ar.cmd = arm-none-eabi-ar
+compiler.ar.extra_flags = 
+compiler.ar.flags = rcs
+compiler.c.cmd = arm-none-eabi-gcc
+compiler.c.elf.cmd = arm-none-eabi-gcc
+compiler.c.elf.extra_flags = -Wl,--cref -Wl,--gc-sections -Wl,--entry=Reset_Handler -Wl,--unresolved-symbols=report-all -Wl,--warn-common
+compiler.c.elf.flags = -O2 -Wl,--gc-sections -mcpu=cortex-m3 -mthumb --specs=nano.specs
+compiler.c.extra_flags = 
+compiler.c.flags = -c -g -w -mcpu=cortex-m3 -mthumb -O2 -fno-short-enums -fno-common -fmessage-length=0 -Wall -fno-exceptions -ffunction-sections -fdata-sections -fomit-frame-pointer -MMD -MP
+compiler.cpp.cmd = arm-none-eabi-g++
+compiler.cpp.extra_flags = 
+compiler.cpp.flags = -c -g -w -O2 -mcpu=cortex-m3 -mthumb -fno-short-enums -fno-common -fmessage-length=0 -Wall -fno-exceptions -ffunction-sections -fdata-sections -fomit-frame-pointer -fno-rtti -MMD -MP
+compiler.define = -DARDUINO=
+compiler.elf2hex.cmd = 
+compiler.elf2hex.extra_flags = 
+compiler.elf2hex.flags = -O binary
+compiler.ldflags = 
+compiler.nm.cmd = arm-none-eabi-nm
+compiler.objcopy.cmd = arm-none-eabi-objcopy
+compiler.objcopy.eep.flags = -O ihex -j .eeprom --set-section-flags=.eeprom=alloc,load --no-change-warnings --change-section-lma .eeprom=0
+compiler.path = {runtime.ide.path}/hardware/tools/gcc-arm-none-eabi-4.8.3-2014q1/bin/
+compiler.size.cmd = arm-none-eabi-size
+compiler.strip.cmd = arm-none-eabi-strip
