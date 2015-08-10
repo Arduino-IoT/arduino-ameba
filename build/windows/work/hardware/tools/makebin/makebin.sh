@@ -56,6 +56,7 @@ cp -f ../../../build/target.axf .
 TOOLCHAIN=../gcc-arm-none-eabi-4.8.3-2014q1/bin/arm-none-eabi
 
 
+chmod 777 ./target.axf
 cp ./target.axf ./target_pure.axf
 ${TOOLCHAIN}-strip ./target_pure.axf
 

@@ -19,7 +19,7 @@ DHT1 DHT;
 #define DHT22_PIN 5
 
 
-char ssid[] = "NeoTPLink"; //  your network SSID (name) 
+char ssid[] = "YourAPName"; //  your network SSID (name) 
 char pass[] = "PASS_HERE";    // your network password (use for WPA, or use as key for WEP)
 int keyIndex = 0;            // your network key Index number (needed only for WEP)
 
