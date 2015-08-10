@@ -30,6 +30,9 @@ typedef void* _sema;
 	} while (0)
 
 
+
+
+
 //
 // extern functions
 //
@@ -85,6 +88,8 @@ extern void rt_os_mdelay(int ms);
 
 // memory
 
+extern void* rtw_malloc(size_t size);
+extern void rtw_free(void* ptr);
 extern int rtw_memcmp(void *dst, void *src, u32 sz);
 
 extern void rtw_memcpy(void* dst, void* src, u32 sz);
@@ -112,6 +117,11 @@ extern u32 rtw_get_current_time(void);
 //
 extern u64 rtw_modular64(u64 n, u64 base);
 
+// Timer
+#define MAX_TIMER_ID	16
+typedef void (*TIMER_FUN)(void *context);
+
+extern void rtw_init_timer(uint8_t *ptimer_id, TIMER_FUN pfunc,void* cntx, char* name);
 
 #ifdef __cplusplus
 }

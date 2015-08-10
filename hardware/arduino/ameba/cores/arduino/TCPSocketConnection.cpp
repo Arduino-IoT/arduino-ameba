@@ -37,7 +37,7 @@ int TCPSocketConnection::connect(const char* host, const int port) {
         return -1;
     }
 
-	DiagPrintf("%s : host = %s \r\n", __FUNCTION__, host);
+	//DiagPrintf("%s : host = %s \r\n", __FUNCTION__, host);
     if (set_address(host, port) != 0) {
 		DiagPrintf("%s : set_address failed \r\n", __FUNCTION__);
         return -1;

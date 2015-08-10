@@ -100,7 +100,7 @@ extern u8 wl_set_stakey(void* padapter1, u8 *psta, u8 unicast_key);
 
 // TX
 
-extern int wl_netif_tx(struct sk_buff** skb);
+extern int8_t wl_netif_tx(struct sk_buff** skb);
 extern void wl_netif_rx(void* skb1);
 
 // SCAN queue

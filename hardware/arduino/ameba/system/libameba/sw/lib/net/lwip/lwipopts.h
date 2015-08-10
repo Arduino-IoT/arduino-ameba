@@ -83,7 +83,7 @@
 
 // Debug Options
 #define LWIP_DEBUG
-#define UDP_LPC_EMAC                LWIP_DBG_ON
+#define UDP_LPC_EMAC                LWIP_DBG_OFF
 #define SYS_DEBUG                   LWIP_DBG_OFF
 #define PPP_DEBUG                   LWIP_DBG_OFF
 #define IP_DEBUG                    LWIP_DBG_OFF
@@ -105,7 +105,7 @@
 #define TCP_QLEN_DEBUG              LWIP_DBG_OFF
 #define ETHARP_DEBUG                LWIP_DBG_OFF
 #define NETIF_DEBUG                 LWIP_DBG_OFF
-#define DHCP_DEBUG                  LWIP_DBG_ON
+#define DHCP_DEBUG                  LWIP_DBG_OFF
 
 #ifdef LWIP_DEBUG
 #define MEMP_OVERFLOW_CHECK         1
@@ -123,7 +123,7 @@
 
 /* MEM_SIZE: the size of the heap memory. If the application will send
 a lot of data that needs to be copied, this should be set high. */
-#define MEM_SIZE                (16*1024)
+#define MEM_SIZE                (32*1024)
 
 /* MEMP_NUM_SYS_TIMEOUT: the number of simulateously active
    timeouts. */
@@ -138,6 +138,7 @@ a lot of data that needs to be copied, this should be set high. */
 
 #define LWIP_STATS				0
 
+#define LWIP_ALLOW_MEM_FREE_FROM_OTHER_CONTEXT 1
 
 #else // for original settings
 

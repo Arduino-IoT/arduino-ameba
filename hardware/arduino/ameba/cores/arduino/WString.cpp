@@ -23,7 +23,6 @@
 #include "itoa.h"
 #include "arm/dtostrf.h"
 
-
 /*********************************************/
 /*  Constructors                             */
 /*********************************************/
@@ -46,6 +45,18 @@ String::String(const __FlashStringHelper *pstr)
 	*this = pstr;
 }
 
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+String::String(String &&rval)
+{
+	init();
+	move(rval);
+}
+String::String(StringSumHelper &&rval)
+{
+	init();
+	move(rval);
+}
+#endif
 
 String::String(char c)
 {
@@ -145,9 +156,7 @@ unsigned char String::reserve(unsigned int size)
 
 unsigned char String::changeBuffer(unsigned int maxStrLen)
 {
-	char *newbuffer;
-
-	newbuffer = (char *)realloc(buffer, maxStrLen + 1);
+	char *newbuffer = (char *)realloc(buffer, maxStrLen + 1);
 	if (newbuffer) {
 		buffer = newbuffer;
 		capacity = maxStrLen;
@@ -182,6 +191,27 @@ String & String::copy(const __FlashStringHelper *pstr, unsigned int length)
 	return *this;
 }
 
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+void String::move(String &rhs)
+{
+	if (buffer) {
+		if (capacity >= rhs.len) {
+			strcpy(buffer, rhs.buffer);
+			len = rhs.len;
+			rhs.len = 0;
+			return;
+		} else {
+			free(buffer);
+		}
+	}
+	buffer = rhs.buffer;
+	capacity = rhs.capacity;
+	len = rhs.len;
+	rhs.buffer = NULL;
+	rhs.capacity = 0;
+	rhs.len = 0;
+}
+#endif
 
 String & String::operator = (const String &rhs)
 {
@@ -193,6 +223,19 @@ String & String::operator = (const String &rhs)
 	return *this;
 }
 
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+String & String::operator = (String &&rval)
+{
+	if (this != &rval) move(rval);
+	return *this;
+}
+
+String & String::operator = (StringSumHelper &&rval)
+{
+	if (this != &rval) move(rval);
+	return *this;
+}
+#endif
 
 String & String::operator = (const char *cstr)
 {
@@ -578,7 +621,7 @@ String String::substring(unsigned int left, unsigned int right) const
 		left = temp;
 	}
 	String out;
-	if (left > len) return out;
+	if (left >= len) return out;
 	if (right > len) right = len;
 	char temp = buffer[right];  // save the replaced character
 	buffer[right] = '\0';	
@@ -643,15 +686,16 @@ void String::replace(const String& find, const String& replace)
 }
 
 void String::remove(unsigned int index){
-	if (index >= len) { return; }
-	int count = len - index;
-	remove(index, count);
+	// Pass the biggest integer as the count. The remove method
+	// below will take care of truncating it at the end of the
+	// string.
+	remove(index, (unsigned int)-1);
 }
 
 void String::remove(unsigned int index, unsigned int count){
 	if (index >= len) { return; }
 	if (count <= 0) { return; }
-	if (index + count > len) { count = len - index; }
+	if (count > len - index) { count = len - index; }
 	char *writeTo = buffer + index;
 	len = len - count;
 	strncpy(writeTo, buffer + index + count,len - index);

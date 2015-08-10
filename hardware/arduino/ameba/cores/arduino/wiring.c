@@ -25,12 +25,10 @@ extern "C" {
 #include "cmsis_os.h"
 #include "rt_time.h"
 
+#include "us_ticker_api.h"
 
 void delay( uint32_t ms )
 {
-
-	//NeoJou
-	
 	osStatus ret;
 
 	//HalDelayUs(ms*1000);
@@ -38,13 +36,14 @@ void delay( uint32_t ms )
 	if ( (ret != osEventTimeout) && (ret != osOK) ) {
 		DiagPrintf("delay : ERROR : 0x%x \n", ret);
 	}
-
 }
 
-void delayMicroseconds(uint32_t usec)
+
+void delayMicroseconds(uint32_t us)
 {
-	HalDelayUs(usec);
+	rtw_udelay_os(us);
 }
+
 
 uint32_t millis( void )
 {
@@ -53,6 +52,10 @@ uint32_t millis( void )
 }
 
 
+uint32_t micros( void ) 
+{
+	return us_ticker_read();
+}
 
 
 #ifdef __cplusplus

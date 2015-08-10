@@ -22,7 +22,11 @@
 #include "WiFiClient1.h"
 
 
-WiFiClient1::WiFiClient1() {
+
+WiFiClient1::WiFiClient1()  : _sock(MAX_SOCK_NUM){
+}
+
+WiFiClient1::WiFiClient1(uint8_t sock) : _sock(sock) {
 }
 
 int WiFiClient1::connect(const char* host, uint16_t port) {
@@ -55,10 +59,6 @@ int WiFiClient1::connect(IPAddress ip, uint16_t port)
     		return 0;
     	}
 
-		Serial.print("sock_fd =");
-		Serial.println(_tcpSocket.get_socket_fd());
-		Serial.print("_sock=");
-		Serial.println(_sock);
 		_sock = _tcpSocket.get_socket_fd();
 		WiFiClass1::_state[_sock] = _sock;
 		_readchar_set = false;

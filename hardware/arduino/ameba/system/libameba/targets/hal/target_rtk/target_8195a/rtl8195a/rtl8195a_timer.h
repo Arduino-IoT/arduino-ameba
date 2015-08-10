@@ -11,7 +11,7 @@
 #define _RTL8195A_TIMER_H_
 
 
-#define TIMER_TICK_US               (float)(1000000.0/32768.0)
+#define TIMER_TICK_US               31
 
 #define TIMER_LOAD_COUNT_OFF        0x00
 #define TIMER_CURRENT_VAL_OFF       0x04

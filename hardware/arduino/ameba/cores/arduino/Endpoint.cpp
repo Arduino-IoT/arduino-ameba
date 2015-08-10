@@ -59,9 +59,6 @@ int Endpoint::set_address(const char* host, const int port) {
     }
     std::memcpy((char*)&_remoteHost.sin_addr.s_addr, p_address, 4);
 
-	DiagPrintf("Endpoint::%s s_addr : 0x%x \r\n", __FUNCTION__, _remoteHost.sin_addr.s_addr);
-	DiagPrintf("Endpoint::%s port : %d \r\n", __FUNCTION__, port);
-    
     // Address family
     _remoteHost.sin_family = AF_INET;
     

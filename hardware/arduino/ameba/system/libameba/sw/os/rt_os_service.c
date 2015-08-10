@@ -3,7 +3,8 @@
 #include "rt_TypeDef.h"
 #include "rt_system.h"
 #include "cmsis_os.h"
-
+#include "ticker_api.h"
+#include "us_ticker_api.h"
 
 #include "rt_os_service.h"
 
@@ -45,32 +46,77 @@ static unsigned int __div64_32(u64 *n, unsigned int base)
 // public functions
 //
 
+static uint8_t uxTskCriticalNesting = 0;
+
 void save_and_cli(void)
 {
-	rt_tsk_lock();
+    cli();
+	if (uxTskCriticalNesting== 0)
+		rt_tsk_lock();
+	uxTskCriticalNesting++;
 }
 
 void restore_flags(void)
 {
-	rt_tsk_unlock();
+	// assert(uxTskCrticialNesting>0);
+	uxTskCriticalNesting--;
+	if (uxTskCriticalNesting== 0)
+ 		rt_tsk_unlock();
+	sti();
 }
+
+static uint8_t uxCriticalNesting = 0;
 
 void cli(void)
 {
-	__disable_irq();
+	if (uxCriticalNesting== 0)
+		__disable_irq();
+	uxCriticalNesting++;
 }
 
 void sti(void)
 {
-	__enable_irq();
+	// assert(uxCrticialNesting>0);
+	uxCriticalNesting--;
+	if (uxCriticalNesting==0)
+		__enable_irq();
 }
 
 //
 // Time 
 //
+#define one_us_cycles    ((1000UL-5UL)/6)
+#define delay_times (one_us_cycles/6)  
 void rtw_udelay_os(int us)
 {
-	HalDelayUs(us);
+	uint32_t i, j;
+	uint32_t us1, us2;
+
+
+	if ( us > 1000 ) {	
+		us1 = us / 1000;
+		osDelay(us1);
+		us = us % 1000;
+	}
+	
+	// http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.ddi0337h/CHDDIGAC.html
+	//
+	// 1000eb9e:	bf00      	nop		    // 1 cycle
+    // 1000eba0:	bf00      	nop            // 1 cycle
+    // 1000eba2:	3301      	adds	r3, #1  // 1 cycle
+    // 1000eba4:	4293      	cmp	r3, r2   // 1 cycle
+    // 1000eba6:	d1fa      	bne.n	1000eb9e <rtw_udelay_os+0xe> // 1 cycle
+	//
+	
+	__disable_irq();
+	for (i=0; i<us; i++) {
+		for (j=0; j<delay_times; j++) {
+			asm volatile (
+				"nop" "\n\t"
+				"nop"); //just waiting 2 cycle
+		}
+	}	
+	__enable_irq();
 }
 
 void rt_os_mdelay(int ms)
@@ -81,6 +127,16 @@ void rt_os_mdelay(int ms)
 //
 // memory management
 //
+
+void* rtw_malloc(size_t size) 
+{
+	return mem_malloc(size);
+}
+
+void rtw_free(void* ptr)
+{
+	return mem_free(ptr);
+}
 
 
 int rtw_memcmp(void *dst, void *src, u32 sz)
@@ -293,5 +349,83 @@ u64 rtw_modular64(u64 n, u64 base)
 		__rem = __div64_32(&(n), __base);
 	
 	return __rem;
+}
+
+// timer
+
+
+static TIMER_FUN timer_func[MAX_TIMER_ID]={NULL};
+static void* timer_func_cntx[MAX_TIMER_ID]={NULL};
+static ticker_event_t timer_func_event[MAX_TIMER_ID];
+
+static void rtw_timer_irq(uint32_t id) 
+{
+    TIMER_FUN timer_f;
+
+	if ( id <0 || id>=MAX_TIMER_ID ) return;
+
+	timer_f = timer_func[id];
+	if ( timer_f == NULL ) return;
+
+	timer_f(timer_func_cntx[id]);
+}
+
+
+void rtw_init_timer(uint8_t *ptimer_id, TIMER_FUN pfunc,void* cntx, char* name)
+{
+	const ticker_data_t *_ticker_data;
+	int i;
+
+
+	DiagPrintf("%s %s : ", __FUNCTION__, name);
+
+	for (i=0; i<MAX_TIMER_ID; i++) 
+		if (timer_func[i] == NULL) break;
+
+	if ( i >= MAX_TIMER_ID ) {
+		DiagPrintf("Can not init timer, already MAX \r\n");
+		return;
+	}
+
+	*ptimer_id = i;
+	timer_func[i] = pfunc;
+	timer_func_cntx[i] = cntx;
+	
+	_ticker_data= get_us_ticker_data();
+	ticker_set_handler(_ticker_data, &rtw_timer_irq);
+	
+	DiagPrintf(" %d \r\n", i);
+}
+
+
+void rtw_set_timer(uint8_t timer_id, u32 delay_time)
+{
+	const ticker_data_t *_ticker_data;
+
+	if ( timer_id <0 || timer_id>=MAX_TIMER_ID ) return;
+	
+	if (timer_func[timer_id] == NULL ) return;
+	_ticker_data= get_us_ticker_data();
+	ticker_insert_event(_ticker_data, &timer_func_event[timer_id], delay_time*1000+ticker_read(_ticker_data), timer_id);
+}
+
+void rtw_cancel_timer(uint8_t timer_id)
+{
+	const ticker_data_t *_ticker_data;
+
+	if ( timer_id <0 || timer_id>=MAX_TIMER_ID ) return;
+	
+	if (timer_func[timer_id] == NULL ) return;
+	_ticker_data= get_us_ticker_data();
+	ticker_remove_event(_ticker_data, &timer_func_event[timer_id]);
+}
+
+void rtw_del_timer(uint8_t timer_id)
+{
+	if ( timer_id <0 || timer_id>=MAX_TIMER_ID ) return;
+
+	rtw_cancel_timer(timer_id);	
+	timer_func[timer_id] = NULL;
+	timer_func_cntx[timer_id] = NULL;
 }
 

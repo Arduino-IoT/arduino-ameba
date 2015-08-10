@@ -27,6 +27,8 @@ extern "C" {
 #include "hal_irqn.h"
 #include "hal_diag.h"
 #include "analogin_api.h"
+#include "us_ticker_api.h"
+#include "rt_os_service.h"
 
 analogin_t   adc1;
 analogin_t   adc2;
@@ -172,14 +174,17 @@ void init( void )
 	//rtl_libc_init();
 
 	init_hal_uart();
-	init_hal_i2c();
-	init_hal_adc();
-	init_hal_dac();
+	//init_hal_i2c();
+	//init_hal_adc();
+	//init_hal_dac();
 	init_hal_wifi();
+	//_ticker_init();
 
-	DiagPrintf("wait for 5 sec.\n");
-	delay(5000);
-	DiagPrintf("Init start \n");
+
+	ConfigDebugInfo&= (~(_DBG_GPIO_));
+	ConfigDebugErr&= (~(_DBG_MISC_));
+
+
 }
 
 
