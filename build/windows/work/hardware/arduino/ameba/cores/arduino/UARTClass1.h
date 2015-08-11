@@ -16,43 +16,49 @@
   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#ifndef _UART_CLASS_
-#define _UART_CLASS_
+#ifndef _UART_CLASS1_
+#define _UART_CLASS1_
 
 #include "HardwareSerial.h"
 #include "RingBuffer.h"
 #include "WString.h"
 
 extern "C" {
+
 #include "hal_irqn.h"
+#include "serial_api.h"
+
 }
 
-class UARTClass: public Stream//public HardwareSerial
+class UARTClass1: public Stream//public HardwareSerial
 {
 
   protected:
+	serial_t		sobj;
+
     RingBuffer *_rx_buffer ;
 
-    IRQn_Type _dwIrq ;
-
   public:
-    UARTClass(IRQn_Type dwIrq, RingBuffer* pRx_buffer ) ;
+	UARTClass1(RingBuffer* pRx_buffer ) ;
 
     void begin( const uint32_t dwBaudRate ) ;
+	void set_baud( const uint32_t dwBaudRate ) ;
     void end( void ) ;
     int available( void ) ;
-    int peek( void ) ;
+    int peek( void );	
     int read( void ) ;
     void flush( void ) ;
     size_t write( const uint8_t c ) ;
 
-    void IrqHandler( void ) ;
+    void IrqHandler(SerialIrq event) ;
 
     using Print::write ; // pull in write(str) and write(buf, size) from Print
 
     operator bool() { return true; }; // UART always active
-
   	
 };
+
+extern UARTClass1 Serial1;
+
 
 #endif // _UART_CLASS_

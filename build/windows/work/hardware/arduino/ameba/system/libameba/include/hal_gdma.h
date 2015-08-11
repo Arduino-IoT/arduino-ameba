@@ -71,6 +71,20 @@ typedef struct _HAL_GDMA_ADAPTER_ {
     u8                          GdmaIsrType;
 }HAL_GDMA_ADAPTER, *PHAL_GDMA_ADAPTER;
 
+typedef struct _HAL_GDMA_CHNL_ {
+    u8 GdmaIndx;
+    u8 GdmaChnl;
+    u8 IrqNum;
+    u8 Reserved;
+}HAL_GDMA_CHNL, *PHAL_GDMA_CHNL;
+
+typedef struct _HAL_GDMA_BLOCK_ {
+    u32 SrcAddr;
+    u32 DstAddr;
+    u32 BlockLength;
+    u32 SrcOffset;
+    u32 DstOffset;
+}HAL_GDMA_BLOCK, *PHAL_GDMA_BLOCK;
 
 typedef struct _HAL_GDMA_OP_ {
     VOID (*HalGdmaOnOff)(VOID *Data);
@@ -85,11 +99,43 @@ typedef struct _HAL_GDMA_OP_ {
     VOID (*HalGdmaChCleanAutoDst)(VOID *Data);
 }HAL_GDMA_OP, *PHAL_GDMA_OP;
 
+typedef struct _HAL_GDMA_OBJ_ {
+    HAL_GDMA_ADAPTER HalGdmaAdapter;
+    IRQ_HANDLE GdmaIrqHandle;
+    volatile GDMA_CH_LLI_ELE GdmaChLli[16];
+    struct GDMA_CH_LLI Lli[16];
+    struct BLOCK_SIZE_LIST BlockSizeList[16];
+    u8 Busy;      // is transfering
+    u8 BlockNum;
+} HAL_GDMA_OBJ, *PHAL_GDMA_OBJ;
 
-VOID HalGdmaOpInit(
-    IN  VOID *Data
-);
+VOID HalGdmaOpInit(IN  VOID *Data);
+VOID HalGdmaOn(PHAL_GDMA_ADAPTER pHalGdmaAdapter);
+VOID HalGdmaOff(PHAL_GDMA_ADAPTER pHalGdmaAdapter);
+BOOL HalGdmaChInit(PHAL_GDMA_ADAPTER pHalGdmaAdapter);
+VOID HalGdmaChDis(PHAL_GDMA_ADAPTER pHalGdmaAdapter);
+VOID HalGdmaChEn(PHAL_GDMA_ADAPTER pHalGdmaAdapter);
+BOOL HalGdmaChSeting(PHAL_GDMA_ADAPTER pHalGdmaAdapter);
+BOOL HalGdmaChBlockSeting(PHAL_GDMA_ADAPTER pHalGdmaAdapter);
+VOID HalGdmaChIsrEn(PHAL_GDMA_ADAPTER pHalGdmaAdapter);
+VOID HalGdmaChIsrDis(PHAL_GDMA_ADAPTER pHalGdmaAdapter);
+u8 HalGdmaChIsrClean(PHAL_GDMA_ADAPTER pHalGdmaAdapter);
+VOID HalGdmaChCleanAutoSrc(PHAL_GDMA_ADAPTER pHalGdmaAdapter);
+VOID HalGdmaChCleanAutoDst(PHAL_GDMA_ADAPTER pHalGdmaAdapter);
+
+extern HAL_Status HalGdmaChnlRegister (u8 GdmaIdx, u8 ChnlNum);
+extern VOID HalGdmaChnlUnRegister (u8 GdmaIdx, u8 ChnlNum);
+extern PHAL_GDMA_CHNL HalGdmaChnlAlloc (HAL_GDMA_CHNL *pChnlOption);
+extern VOID HalGdmaChnlFree (HAL_GDMA_CHNL *pChnl);
+extern BOOL HalGdmaMemCpyInit(PHAL_GDMA_OBJ pHalGdmaObj);
+extern VOID HalGdmaMemCpyDeInit(PHAL_GDMA_OBJ pHalGdmaObj);
+extern VOID* HalGdmaMemCpy(PHAL_GDMA_OBJ pHalGdmaObj, void* pDest, void* pSrc, u32 len);
+extern VOID HalGdmaMemAggr(PHAL_GDMA_OBJ pHalGdmaObj, PHAL_GDMA_BLOCK pHalGdmaBlock);
+extern BOOL HalGdmaMemCpyAggrInit(PHAL_GDMA_OBJ pHalGdmaObj);
 
 extern const HAL_GDMA_OP _HalGdmaOp;
+extern const HAL_GDMA_CHNL GDMA_Chnl_Option[];
+extern const HAL_GDMA_CHNL GDMA_Multi_Block_Chnl_Option[];
+extern const u16 HalGdmaChnlEn[6];
 
 #endif

@@ -11,6 +11,30 @@
 #ifndef _RTL8195A_GDMA_H_
 #define _RTL8195A_GDMA_H_
 
+// Define GDMA Handshake interface with peripheral, 0 -> GDMA0, 1-> GDMA1
+// Set this Hnadshake interface map to register REG_PESOC_SOC_CTRL
+#define GDMA_HANDSHAKE_UART0_TX             0
+#define GDMA_HANDSHAKE_UART0_RX             1
+#define GDMA_HANDSHAKE_UART1_TX             2
+#define GDMA_HANDSHAKE_UART1_RX             3
+#define GDMA_HANDSHAKE_UART2_TX             14      // Only on GDMA 0, hardware fixed
+#define GDMA_HANDSHAKE_UART2_RX             14      // Only on GDMA 1, hardware fixed
+
+#define GDMA_HANDSHAKE_SSI0_TX              4
+#define GDMA_HANDSHAKE_SSI0_RX              5
+#define GDMA_HANDSHAKE_SSI1_TX              6
+#define GDMA_HANDSHAKE_SSI1_RX              7
+#define GDMA_HANDSHAKE_SSI2_TX              15      // Only on GDMA 0, hardware fixed
+#define GDMA_HANDSHAKE_SSI2_RX              15      // Only on GDMA 1, hardware fixed
+
+#define GDMA_HANDSHAKE_I2C0_TX              8
+#define GDMA_HANDSHAKE_I2C0_RX              9
+#define GDMA_HANDSHAKE_I2C1_TX              10
+#define GDMA_HANDSHAKE_I2C1_RX              11
+
+#define GDMA_HANDSHAKE_ADC                  12
+#define GDMA_HANDSHAKE_DAC0                 13      // Only on GDMA 0, hardware fixed
+#define GDMA_HANDSHAKE_DAC1                 13      // Only on GDMA 1, hardware fixed
 
 #define HAL_GDMAX_READ32(GdmaIndex, addr)     \
                 HAL_READ32(GDMA0_REG_BASE+ (GdmaIndex*GDMA1_REG_OFF), addr)
@@ -457,6 +481,42 @@ HalGdmaChCleanAutoDstRtl8195a (
     IN  VOID              *Data
 ); 
 
+u32
+HalGdmaQueryDArRtl8195a(
+    IN  VOID     *Data
+);
 
+u32
+HalGdmaQuerySArRtl8195a(
+    IN  VOID     *Data
+);
+
+BOOL
+HalGdmaQueryChEnRtl8195a (
+    IN  VOID              *Data
+);
+
+#ifdef CONFIG_CHIP_E_CUT
+_LONG_CALL_ BOOL
+HalGdmaChBlockSetingRtl8195a_V04(
+    IN  VOID     *Data
+);
+
+_LONG_CALL_ u32
+HalGdmaQueryDArRtl8195a_V04(
+    IN  VOID     *Data
+);
+
+_LONG_CALL_ u32
+HalGdmaQuerySArRtl8195a_V04(
+    IN  VOID     *Data
+);
+
+_LONG_CALL_ BOOL
+HalGdmaQueryChEnRtl8195a_V04 (
+    IN  VOID      *Data
+);
+
+#endif  // #ifdef CONFIG_CHIP_E_CUT
 
 #endif

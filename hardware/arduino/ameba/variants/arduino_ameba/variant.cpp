@@ -85,9 +85,10 @@ i2c_t i2cmaster_wire1;
 #endif
 
 // LogUart
-RingBuffer rx_buffer1;
+static RingBuffer rx_buffer0;
 
-UARTClass Serial(UART_LOG_IRQ, &rx_buffer1);
+UARTClass Serial(UART_LOG_IRQ, &rx_buffer0);
+
 void serialEvent() __attribute__((weak));
 void serialEvent() { }
 
@@ -96,6 +97,7 @@ void UART_Handler(void)
 {
   Serial.IrqHandler();
 }
+
 
 static void ReRegisterSerial(void)
 {
@@ -112,6 +114,7 @@ static void ReRegisterSerial(void)
     InterruptUnRegister(&UartIrqHandle); 
     InterruptRegister(&UartIrqHandle); 
 }
+
 
 void init_hal_uart(void)
 {
@@ -181,7 +184,7 @@ void init( void )
 	//_ticker_init();
 
 
-	ConfigDebugInfo&= (~(_DBG_GPIO_));
+	ConfigDebugInfo&= (~(_DBG_GPIO_ | _DBG_UART_));
 	ConfigDebugErr&= (~(_DBG_MISC_));
 
 

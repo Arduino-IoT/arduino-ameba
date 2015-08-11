@@ -56,7 +56,8 @@ struct port_s {
 struct serial_s {
     HAL_RUART_OP hal_uart_op;
     HAL_RUART_ADAPTER hal_uart_adp;
-//    UART_DMA_CONFIG   hal_uart_dma_cfg;
+    uint32_t    tx_len;
+    uint32_t    rx_len;
 };
 #endif  // end of "#ifdef CONFIG_UART_EN"
 

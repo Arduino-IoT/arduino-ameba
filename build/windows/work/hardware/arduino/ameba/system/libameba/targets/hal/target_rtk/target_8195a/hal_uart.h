@@ -18,14 +18,10 @@
 #define UART_WAIT_FOREVER       0xffffffff
 
 typedef struct _UART_DMA_CONFIG_ {
-    u8 TxDmaEnable;
     u8 RxDmaEnable;
-    u8 TxDmaBurstSize;
     u8 RxDmaBurstSize;
     VOID *pHalGdmaOp;
-    VOID *pTxHalGdmaAdapter;
     VOID *pRxHalGdmaAdapter;
-    IRQ_HANDLE TxGdmaIrqHandle;
     IRQ_HANDLE RxGdmaIrqHandle;
 }UART_DMA_CONFIG, *PUART_DMA_CONFIG;
 
@@ -43,7 +39,7 @@ typedef struct _HAL_RUART_ADAPTER_ {
     u8 Locked;      // is UART locked for operation
     u8 UartIndex;
     u8 WordLen;     // word length select: 0 -> 7 bits, 1 -> 8 bits
-    u8 StopBit;     // word length select: 0 -> no stop bit, 1 -> 1 stop bit
+    u8 StopBit;     // word length select: 0 -> 1 stop bit, 1 -> 2 stop bit
     u8 Parity;      // parity check enable
     u8 ParityType;  // parity check type
     u8 StickParity;
@@ -65,6 +61,32 @@ typedef struct _HAL_RUART_ADAPTER_ {
     VOID *RxCompCbPara; // the pointer argument for RxCompCallback
     VOID (*EnterCritical)(void);
     VOID (*ExitCritical)(void);
+
+#if defined(E_CUT_ROM_DOMAIN) || (!defined(CONFIG_RELEASE_BUILD_LIBRARIES))
+    //1 New member only can be added below: members above must be fixed for ROM code
+    u32 *pDefaultBaudRateTbl;      // point to the table of pre-defined baud rate
+    u8 *pDefaultOvsrRTbl;         // point to the table of OVSR for pre-defined baud rate
+    u16 *pDefaultDivTbl;           // point to the table of DIV for pre-defined baud rate
+    u8  *pDefOvsrAdjBitTbl_10;     // point to the table of OVSR-Adj bits for 10 bits
+    u8  *pDefOvsrAdjBitTbl_9;     // point to the table of OVSR-Adj bits for 9 bits
+    u8  *pDefOvsrAdjBitTbl_8;     // point to the table of OVSR-Adj bits for 8 bits
+    u16 *pDefOvsrAdjTbl_10;       // point to the table of OVSR-Adj for pre-defined baud rate
+    u16 *pDefOvsrAdjTbl_9;       // point to the table of OVSR-Adj for pre-defined baud rate
+    u16 *pDefOvsrAdjTbl_8;       // point to the table of OVSR-Adj for pre-defined baud rate
+    u32 BaudRateUsing;             // Current using Baud-Rate    
+
+#if 0//CONFIG_CHIP_E_CUT
+    u8  TxState;
+    u8  RxState;
+    u32 TxInitSize;     // how many byte to TX at atart
+    u32 RxInitSize;     // how many bytes to RX at start
+
+    VOID (*RuartEnterCritical)(VOID *para);   // enter critical: disable UART interrupt
+    VOID (*RuartExitCritical)(VOID *para);    // exit critical: re-enable UART interrupt
+    VOID (*TaskYield)(VOID *para);    // User Task Yield: do a context switch while waitting
+    VOID *TaskYieldPara;   // the agrument (pointer) for TaskYield
+#endif    // #if CONFIG_CHIP_E_CUT
+#endif
 }HAL_RUART_ADAPTER, *PHAL_RUART_ADAPTER;
 
 typedef struct _HAL_RUART_OP_ {
@@ -77,8 +99,8 @@ typedef struct _HAL_RUART_OP_ {
     HAL_Status (*HalRuartPutC)(VOID *Data, u8 TxData);
     u32  (*HalRuartSend)(VOID *Data, u8 *pTxData, u32 Length, u32 Timeout);
     HAL_Status  (*HalRuartIntSend)(VOID *Data, u8 *pTxData, u32 Length);
-    HAL_Status  (*HalRuartDmaSend)(VOID *Data, u8 *pTxData, u32 Length);
-    HAL_Status  (*HalRuartStopSend)(VOID *Data);
+//    HAL_Status  (*HalRuartDmaSend)(VOID *Data, u8 *pTxData, u32 Length);
+//    HAL_Status  (*HalRuartStopSend)(VOID *Data);
     HAL_Status (*HalRuartGetC)(VOID *Data, u8 *pRxByte);
     u32  (*HalRuartRecv)(VOID *Data, u8  *pRxData, u32 Length, u32 Timeout);
     HAL_Status  (*HalRuartIntRecv)(VOID *Data, u8  *pRxData, u32 Length);
@@ -108,12 +130,73 @@ typedef struct _RUART_ADAPTER_ {
     PUART_DMA_CONFIG   pHalRuartDmaCfg;
 }RUART_ADAPTER, *PRUART_ADAPTER;
 
-VOID
+extern VOID
 HalRuartOpInit(
         IN VOID *Data
 );
 
+extern HAL_Status
+HalRuartTxGdmaInit(
+    PHAL_RUART_OP pHalRuartOp,
+    PHAL_RUART_ADAPTER pHalRuartAdapter,
+    PUART_DMA_CONFIG pUartGdmaConfig
+);
+
+extern VOID
+HalRuartTxGdmaDeInit(
+    PUART_DMA_CONFIG pUartGdmaConfig
+);
+
+extern HAL_Status
+HalRuartRxGdmaInit(
+    PHAL_RUART_OP pHalRuartOp,
+    PHAL_RUART_ADAPTER pHalRuartAdapter,
+    PUART_DMA_CONFIG pUartGdmaConfig
+);
+
+extern VOID
+HalRuartRxGdmaDeInit(
+    PUART_DMA_CONFIG pUartGdmaConfig
+);
+
+extern HAL_Status
+HalRuartResetTxFifo(
+    VOID *Data
+);
+
+extern HAL_Status 
+HalRuartSetBaudRate(
+        IN VOID *Data
+);
+
+extern HAL_Status 
+HalRuartInit(
+    IN VOID *Data
+);
+
+extern VOID
+HalRuartDeInit(
+    IN VOID *Data
+);
+
+extern HAL_Status 
+HalRuartDisable(
+    IN VOID *Data
+);
+
+extern HAL_Status 
+HalRuartEnable(
+    IN VOID *Data
+);
+
+HAL_Status 
+HalRuartFlowCtrl(
+    IN VOID *Data
+);
+
 extern const HAL_RUART_OP _HalRuartOp;
+extern HAL_Status RuartLock (PHAL_RUART_ADAPTER pHalRuartAdapter);
+extern VOID RuartUnLock (PHAL_RUART_ADAPTER pHalRuartAdapter);
 
 #endif
 

@@ -11,6 +11,7 @@
 #ifndef _RTL8195A_UART_H_
 #define _RTL8195A_UART_H_
 
+#define MAX_UART_INDEX      2
 
 #define RUART_DLL_OFF                   0x00
 #define RUART_DLM_OFF                   0x04    //RW, DLAB = 1
@@ -25,6 +26,7 @@
 #define RUART_IIR_INT_ID                (0x07<<1) //011(3), 010(2), 110(6), 001(1), 000(0)
 #define RUART_FIFO_CTL_REG_OFF          0x08    //[W]
 #define RUART_FIFO_CTL_REG_CLEAR_RXFIFO (1<<1)  //BIT1, 0x02, Write 1 clear
+#define RUART_FIFO_CTL_REG_CLEAR_TXFIFO (1<<2)  //BIT2, 0x04, Write 1 clear
 #define RUART_FIFO_CTL_REG_DMA_ENABLE   0x08    //BIT3
 
 #define FIFO_CTL_DEFAULT_WITH_FIFO_DMA  0xC9
@@ -53,8 +55,8 @@
 #define RUART_MODEM_STATUS_REG_OFF      0x18    //Modem Status Register
 #define RUART_SCRATCH_PAD_REG_OFF       0x1C    //Scratch Pad Register
 #define RUART_SP_REG_RXBREAK_INT_STATUS (1<<7)  //BIT7, 0x80, Write 1 clear
-#define RUART_SP_REG_DBG_SEL            0x0F<<8 //[11:8], Debug port selection
-#define RUART_SP_REG_XFACTOR_ADJ        0x7FF<<16  //[26:16]
+#define RUART_SP_REG_DBG_SEL            (0x0F<<8) //[11:8], Debug port selection
+#define RUART_SP_REG_XFACTOR_ADJ        (0x7FF<<16)  //[26:16]
 
 #define RUART_STS_REG_OFF               0x20
 #define RUART_STS_REG_RESET_RCV         (1<<3)  //BIT3, 0x08, Reset Uart Receiver
@@ -122,11 +124,28 @@
 #define HAL_RUART_WRITE8(UartIndex, addr, value)    \
     HAL_WRITE8(UART0_REG_BASE+ (UartIndex*RUART_REG_OFF), addr, value)
 
+#define UART_OVSR_POOL_MIN      1000
+#define UART_OVSR_POOL_MAX      2090
+#define DIVISOR_RESOLUTION      10
+#define JITTER_LIMIT            100
+#define UART_SCLK               (200000000*5/12)
+
 typedef struct _RUART_SPEED_SETTING_ {
     u32 BaudRate;
     u32 Ovsr;
     u32 Div;
     u32 Ovsr_adj;
+#if defined(E_CUT_ROM_DOMAIN) || (!defined(CONFIG_RELEASE_BUILD_LIBRARIES))
+    u8 Ovsr_adj_max_bits;  // 9: No parity, 10: with Parity
+    u8 Ovsr_adj_bits;
+    u16 *Ovsr_adj_map;
+    u32 max_err;        // 10 ~ 100: 30
+    u32 Ovsr_min;       // 10 ~ 20: 1000
+    u32 Ovsr_max;       // 10 ~ 20: 2000
+    u32 divisor_resolution; // 1 ~ 20: 10
+    u32 jitter_lim;     // 50 ~ 100: 100
+    u32 sclk;           // 83.33333 MHz
+#endif    
 }RUART_SPEED_SETTING, *PRUART_SPEED_SETTING;
 
 typedef enum _UART_RXFIFO_TRIGGER_LEVEL_ {
@@ -165,8 +184,8 @@ typedef enum _RUART_WORD_LEN_SEL_ {
 }RUART_WORD_LEN_SEL, *PRUART_WORD_LEN_SEL;
 
 typedef enum _RUART_STOP_BITS_ {
-	RUART_NO_STOP_BIT = 0,
-    RUART_1_STOP_BIT = 1
+    RUART_STOP_BIT_1 = 0,
+    RUART_STOP_BIT_2 = 1
 }RUART_STOP_BITS, *PRUART_STOP_BITS;
 
 typedef enum _RUART_PARITY_CONTROL_ {
@@ -277,17 +296,6 @@ HalRuartIntSendRtl8195a(
         IN u32 Length       // the length of data to be send
         );
 
-HAL_Status
-HalRuartDmaSendRtl8195a(
-        IN VOID *Data,      // PHAL_RUART_ADAPTER
-        IN u8 *pTxData,     // the Buffer to be send
-        IN u32 Length      // the length of data to be send
-);
-
-HAL_Status
-HalRuartStopSendRtl8195a(
-        IN VOID *Data      // PHAL_RUART_ADAPTER
-);
 
 HAL_Status
 HalRuartGetCRtl8195a(
@@ -327,7 +335,7 @@ HalRuartGetIMRRtl8195a(
         IN VOID *Data
         );
 
-_LONG_CALL_ VOID
+extern VOID
 HalRuartSetIMRRtl8195a(
         IN VOID *Data
         );
@@ -376,5 +384,76 @@ HalRuartRxGdmaLoadDefRtl8195a(
         IN VOID *pCfg
 );
 
-#endif
+_LONG_CALL_  HAL_Status HalRuartIntSendRtl8195aV02(
+    IN VOID *Data,      // PHAL_RUART_ADAPTER
+    IN u8 *pTxData,     // the Buffer to be send
+    IN u32 Length      // the length of data to be send
+);
 
+_LONG_CALL_  HAL_Status
+HalRuartIntRecvRtl8195aV02(
+    IN VOID *Data,  ///< RUART Adapter
+    IN u8  *pRxData,  ///< Rx buffer
+    IN u32 Length      // buffer length
+);
+
+_LONG_CALL_ s32
+FindElementIndex_v02(
+        u32 Element,  ///< RUART Baudrate
+        u32* Array,    ///< Pre-defined Baudrate Array
+        u32 ElementNo
+);
+
+_LONG_CALL_ HAL_Status HalRuartInitRtl8195a_v02(IN VOID *Data);
+
+// New added function 2015/04/20
+HAL_Status
+HalRuartResetTxFifoRtl8195a(
+        IN VOID *Data  ///< RUART Adapter
+        );
+
+HAL_Status 
+HalRuartSetBaudRateRtl8195a(
+        IN VOID *Data
+        );
+
+HAL_Status 
+HalRuartEnableRtl8195a(
+    IN VOID *Data
+);
+
+HAL_Status 
+HalRuartDisableRtl8195a(
+    IN VOID *Data
+);
+
+HAL_Status 
+HalRuartFlowCtrlRtl8195a(
+    IN VOID *Data
+);
+
+
+HAL_Status
+RuartIsTimeout (
+    u32 StartCount,
+    u32 TimeoutCnt
+);
+
+HAL_Status
+HalRuartStopRecvRtl8195a_Patch(
+        IN VOID *Data
+);
+
+
+VOID
+HalRuartEnterCriticalRtl8195a(
+        IN VOID *Data
+);
+
+VOID
+HalRuartExitCriticalRtl8195a(
+        IN VOID *Data
+);
+
+
+#endif

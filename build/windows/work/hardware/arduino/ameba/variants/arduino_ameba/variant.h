@@ -52,6 +52,8 @@ extern UARTClass Serial;
 //extern USARTClass Serial2;
 //extern USARTClass Serial3;
 
+#include "UARTClass1.h"
+extern UARTClass1 Serial1;
 #endif
 
 
