@@ -48,6 +48,13 @@ public:
 	int begin(char* ssid, const char *passphrase);
 
 	  /*
+	   * Disconnect from the network
+	   *
+	   * return: one value of wl_status_t enum
+	   */
+	  int disconnect(void);
+
+	  /*
 	   * Get the interface MAC address.
 	   *
 	   * return: pointer to uint8_t array with length WL_MAC_ADDR_LENGTH

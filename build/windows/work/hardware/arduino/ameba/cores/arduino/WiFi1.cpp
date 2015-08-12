@@ -59,6 +59,11 @@ int WiFiClass1::begin(char* ssid, const char *passphrase)
 
 }
 
+int WiFiClass1::disconnect()
+{
+    return wiFiDrv1.disconnect();
+}
+
 uint8_t* WiFiClass1::macAddress(uint8_t* mac)
 {
 	uint8_t* _mac = wiFiDrv1.getMacAddress();

@@ -80,6 +80,13 @@ public:
      */
    int8_t wifiSetPassphrase(char* ssid, uint8_t ssid_len, const char *passphrase, const uint8_t len);
 
+   /*
+	* Disconnect from the network
+	*
+	* return: WL_SUCCESS or WL_FAILURE
+	*/
+   int8_t disconnect();
+
    uint8_t* getMacAddress();
 
    /*

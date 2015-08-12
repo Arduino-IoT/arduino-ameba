@@ -86,6 +86,12 @@ void WiFiDrv1::wifiDriverInit()
 	wl_wifi_init(&padapter, &pnetif);
 }
 
+int8_t WiFiDrv1::disconnect()
+{
+	wl_wifi_disconnect(padapter);
+    return WL_SUCCESS;
+}
+
 
 
 int8_t WiFiDrv1::startScanNetworks()

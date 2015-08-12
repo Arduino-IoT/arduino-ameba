@@ -88,6 +88,9 @@ extern wl_err_t wl_wifi_connect(
 	const char*		password,
 	const int		password_len);
 
+void wl_wifi_disconnect(
+	void* padapter1);
+
 extern void wl_wifi_get_mac_address(void* padapter1, u8* mac_addr);
 
 //GTK

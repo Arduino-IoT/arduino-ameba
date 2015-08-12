@@ -37,7 +37,7 @@
 // Size of a MAC-address or BSSID
 #define WL_IPV4_LENGTH 4
 // Maximum size of a SSID list
-#define WL_NETWORKS_LIST_MAXNUM	20
+#define WL_NETWORKS_LIST_MAXNUM	50
 // Maxmium number of socket
 #define	MAX_SOCK_NUM		4
 // Socket not available constant
