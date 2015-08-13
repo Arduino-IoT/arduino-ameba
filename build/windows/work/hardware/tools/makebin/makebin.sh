@@ -63,8 +63,11 @@ ${TOOLCHAIN}-strip ./target_pure.axf
 ${TOOLCHAIN}-objcopy -j .ram.start.table -j .ram_image1.text \
 -Obinary  ./target_pure.axf ./ram_1.bin
 
-${TOOLCHAIN}-objcopy -j .image2.start.table -j .ram_image2.text -j .ram.data \
+${TOOLCHAIN}-objcopy -j .image2.start.table -j .ram_image2.text \
 -Obinary  ./target_pure.axf ./ram_2.bin
+
+${TOOLCHAIN}-objcopy -j .image3 -j .relocate -j .ARM.exidx -j .sdr_data \
+-Obinary  ./target_pure.axf ./ram_3.bin
 
 ${TOOLCHAIN}-nm.exe target.axf | sort > target.map
 
@@ -72,14 +75,16 @@ ${TOOLCHAIN}-objdump.exe -d target.axf > target.asm
 
 rm -f ./ram_1_prepend.bin
 rm -f ./ram_2_prepend.bin
+rm -f ./ram_3_prepend.bin
 
 ./prepend_header.sh ./ram_1.bin __ram_image1_text_start__ ./target.map 44
 ./prepend_header.sh ./ram_2.bin __ram_image2_text_start__ ./target.map
+./prepend_header.sh ./ram_3.bin __sdram_image3_text_start__ ./target.map
 
 #make pad
 rm -f ./ram_1_prepend.bin.pad
 ./imgpad ./ram_1_prepend.bin 45056
-cat ./ram_1_prepend.bin.pad ./ram_2_prepend.bin > ./ram_all.bin
+cat ./ram_1_prepend.bin.pad ./ram_2_prepend.bin ./ram_3_prepend.bin > ./ram_all.bin
 
 
 mbed_disk=100

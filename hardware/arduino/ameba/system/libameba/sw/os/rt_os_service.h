@@ -31,6 +31,9 @@ typedef void* _sema;
 
 
 
+//
+// typedef 
+//
 
 
 //
@@ -118,10 +121,20 @@ extern u32 rtw_get_current_time(void);
 extern u64 rtw_modular64(u64 n, u64 base);
 
 // Timer
+typedef u8 _timer;
+
 #define MAX_TIMER_ID	16
 typedef void (*TIMER_FUN)(void *context);
 
 extern void rtw_init_timer(uint8_t *ptimer_id, TIMER_FUN pfunc,void* cntx, char* name);
+
+extern void rtw_set_timer(uint8_t timer_id, u32 delay_time);
+
+extern void rtw_cancel_timer(uint8_t timer_id);
+
+extern void rtw_del_timer(uint8_t timer_id);
+
+
 
 #ifdef __cplusplus
 }

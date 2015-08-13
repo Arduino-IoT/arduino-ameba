@@ -21,6 +21,11 @@
 #ifndef __WIFI_INTFS_H_
 #define __WIFI_INTFS_H_
 
+// options
+
+#define   MAX_JOIN_TIMEOUT	3000
+
+
 
 #ifdef __cplusplus
 extern "C" {

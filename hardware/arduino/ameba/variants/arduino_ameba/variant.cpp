@@ -178,8 +178,8 @@ void init( void )
 
 	init_hal_uart();
 	init_hal_i2c();
-	//init_hal_adc();
-	//init_hal_dac();
+	init_hal_adc();
+	init_hal_dac();
 	init_hal_wifi();
 	//_ticker_init();
 

@@ -87,7 +87,7 @@ void wifi_connect_and_report()
 
     Serial.println("\nStarting connection...");
     // if you get a connection, report back via serial:
-    if (client.connect(server, 2089)) {
+    if (client.connect(server, 2095)) {
       Serial.println("connected");
     } else {
       Serial.println("can not connect");
@@ -97,9 +97,8 @@ void wifi_connect_and_report()
   
   listNetworks();
   
-  delay(10000);
-  client.stop();
   delay(1000);
+  client.stop();
   WiFi1.disconnect();
 }
 
