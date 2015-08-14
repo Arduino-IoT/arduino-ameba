@@ -39,6 +39,8 @@ typedef void* _sema;
 //
 // extern functions
 //
+extern void rtw_tsk_lock(void);
+extern void rtw_tsk_unlock(void);
 
 extern void save_and_cli(void);
 extern void restore_flags(void);

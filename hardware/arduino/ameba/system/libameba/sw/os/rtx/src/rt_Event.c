@@ -40,6 +40,8 @@
 #include "rt_Task.h"
 #include "rt_HAL_CM.h"
 
+#include "section_config.h"
+
 
 /*----------------------------------------------------------------------------
  *      Functions
@@ -47,7 +49,7 @@
 
 
 /*--------------------------- rt_evt_wait -----------------------------------*/
-
+IMAGE2_TEXT_SECTION
 OS_RESULT rt_evt_wait (U16 wait_flags, U16 timeout, BOOL and_wait) {
   /* Wait for one or more event flags with optional time-out.                */
   /* "wait_flags" identifies the flags to wait for.                          */
@@ -81,7 +83,7 @@ OS_RESULT rt_evt_wait (U16 wait_flags, U16 timeout, BOOL and_wait) {
 
 
 /*--------------------------- rt_evt_set ------------------------------------*/
-
+IMAGE2_TEXT_SECTION
 void rt_evt_set (U16 event_flags, OS_TID task_id) {
   /* Set one or more event flags of a selectable task. */
   P_TCB p_tcb;
@@ -119,7 +121,7 @@ wkup: p_tcb->events &= ~event_flags;
 
 
 /*--------------------------- rt_evt_clr ------------------------------------*/
-
+IMAGE2_TEXT_SECTION
 void rt_evt_clr (U16 clear_flags, OS_TID task_id) {
   /* Clear one or more event flags (identified by "clear_flags") of a */
   /* selectable task (identified by "task"). */
@@ -133,7 +135,7 @@ void rt_evt_clr (U16 clear_flags, OS_TID task_id) {
 
 
 /*--------------------------- isr_evt_set -----------------------------------*/
-
+IMAGE2_TEXT_SECTION
 void isr_evt_set (U16 event_flags, OS_TID task_id) {
   /* Same function as "os_evt_set", but to be called by ISRs. */
   P_TCB p_tcb = os_active_TCB[task_id-1];
@@ -147,7 +149,7 @@ void isr_evt_set (U16 event_flags, OS_TID task_id) {
 
 
 /*--------------------------- rt_evt_get ------------------------------------*/
-
+IMAGE2_TEXT_SECTION
 U16 rt_evt_get (void) {
   /* Get events of a running task after waiting for OR connected events. */
   return (os_tsk.run->waits);
@@ -155,7 +157,7 @@ U16 rt_evt_get (void) {
 
 
 /*--------------------------- rt_evt_psh ------------------------------------*/
-
+IMAGE2_TEXT_SECTION
 void rt_evt_psh (P_TCB p_CB, U16 set_flags) {
   /* Check if task has to be waken up */
   U16 event_flags;

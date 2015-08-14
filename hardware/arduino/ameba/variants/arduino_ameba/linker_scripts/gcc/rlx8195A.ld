@@ -13,7 +13,6 @@ MEMORY
 }
 
 
-
 SECTIONS
 {
   __rom_bss_start__ = 0x10000300;
@@ -76,67 +75,19 @@ SECTIONS
     *(.infra.ram.start*)
     *(.mon.ram.text*)
     *(.wifi.ram.text*)
+    *(.img2.ram.text*)
     *(.wifi.ram.data*)
+    *(.img2.ram.data*)
     *(.bfsram.data*)
     *(.bdsram.data*)
 
-  } > BD_RAM
-
-
-
-  
-    /* .bss section which is used for uninitialized data */
-    .bss  (NOLOAD):
-    {
-        . = ALIGN(4);
-        __bss_start__ = .;
-        _sbss = . ;
-        _szero = .;
-        
-        *(COMMON)
-        *(.sdio.rom.bss*)
-        
-        . = ALIGN(4);
-        _ebss = . ;
-        _ezero = .;
-        __bss_end__ = .;
-
-    } > BD_RAM
-
-    .heap (NOLOAD):
-    {
-        __end__ = .;
-        end = __end__;
-        *(.heap*)
-        __HeapLimit = .;
-    } > BD_RAM
-
-
-    /* stack section */
-    .stack_dummy (NOLOAD):
-    {
-		*(.stack)
-    } > BD_RAM
-
-	__StackTop = ORIGIN(BD_RAM) + LENGTH(BD_RAM);
-	__StackLimit = __StackTop - SIZEOF(.stack_dummy);
-	PROVIDE(__stack = __StackTop);
-
-	/* Check if data + heap + stack exceeds RAM limit */
-	ASSERT(__StackLimit >= __HeapLimit, "region RAM overflowed with stack")
-
-    .image3 :
-    {
-        __sdram_image3_text_start__ = .;
         __data_start__ = .;
         _sdata = .;
         . = ALIGN(4);
         *(vtable)
 
         . = ALIGN(4);
-            *(.text .text.* .gnu.linkonce.t.*)
 	    *(.glue_7t) *(.glue_7)
-        *(.rodata .rodata* .gnu.linkonce.r.*)
         *(.ARM.extab* .gnu.linkonce.armextab.*)
 
 
@@ -190,29 +141,71 @@ SECTIONS
 
 	KEEP(*(.jcr*))
 
-    } > SDRAM_RAM
-
-    . = ALIGN(4);
-    _etext = .;
-
-    .relocate : AT (_etext)
-    {
-        . = ALIGN(4);
-        _srelocate = .;
-        *(.ramfunc .ramfunc.*);
-        *(.data .data.*);
-        . = ALIGN(4);
-        _erelocate = .;
-    } > SDRAM_RAM
-
+  } > BD_RAM
 
     /* .ARM.exidx is sorted, so has to go in its own output section.  */
     PROVIDE_HIDDEN (__exidx_start = .);
     .ARM.exidx :
     {
       *(.ARM.exidx* .gnu.linkonce.armexidx.*)
-    } > SDRAM_RAM
+    } > BD_RAM
     PROVIDE_HIDDEN (__exidx_end = .);
+
+
+  
+    /* .bss section which is used for uninitialized data */
+    .bss  (NOLOAD):
+    {
+        . = ALIGN(4);
+        __bss_start__ = .;
+        _sbss = . ;
+        _szero = .;
+        
+        *(COMMON)
+        *(.sdio.rom.bss*)
+        
+        . = ALIGN(4);
+        _ebss = . ;
+        _ezero = .;
+        __bss_end__ = .;
+
+    } > BD_RAM
+
+    .heap (NOLOAD):
+    {
+        __end__ = .;
+        end = __end__;
+        *(.heap*)
+        __HeapLimit = .;
+    } > BD_RAM
+
+
+    /* stack section */
+    .stack_dummy (NOLOAD):
+    {
+		*(.stack)
+    } > BD_RAM
+
+	__StackTop = ORIGIN(BD_RAM) + LENGTH(BD_RAM);
+	__StackLimit = __StackTop - SIZEOF(.stack_dummy);
+	PROVIDE(__stack = __StackTop);
+
+	/* Check if data + heap + stack exceeds RAM limit */
+	ASSERT(__StackLimit >= __HeapLimit, "region RAM overflowed with stack")
+
+    .image3 :
+    {
+        __sdram_image3_text_start__ = .;
+
+        . = ALIGN(4);
+         *(.text .text.* .gnu.linkonce.t.*)
+        *(.rodata .rodata* .gnu.linkonce.r.*)
+        *(.ramfunc .ramfunc.*);
+        *(.data .data.*);
+        . = ALIGN(4);
+    } > SDRAM_RAM
+
+
 
   .sdr_data : 
   {

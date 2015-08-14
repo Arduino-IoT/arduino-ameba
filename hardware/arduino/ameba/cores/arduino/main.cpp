@@ -21,6 +21,7 @@
 #include "Arduino.h"
 extern "C" {
 #include "diag.h"
+#include "section_config.h"
 }
 
 /*
@@ -52,6 +53,7 @@ extern void rt_init(void);
 /*
  * \brief Main entry point of Arduino application
  */
+IMAGE2_TEXT_SECTION
 int main( void )
 {
 

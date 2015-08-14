@@ -54,6 +54,7 @@
 #define WIFI_RAM_DATA_SECTION                      \
         SECTION(".wifi.ram.data")
 
+
 //3 Hal Section
 #define HAL_ROM_TEXT_SECTION                         \
         SECTION(".hal.rom.text")
@@ -289,5 +290,12 @@
 
 #define SSL_RAM_MAP_SECTION             \
         SECTION(".ssl_ram_map")
+
+// NeoJou : image2
+#define IMAGE2_TEXT_SECTION					\
+		SECTION(".img2.ram.text")
+
+#define IMAGE2_DATA_SECTION					\
+		SECTION(".img2.ram.data")
 
 #endif //_SECTION_CONFIG_H_

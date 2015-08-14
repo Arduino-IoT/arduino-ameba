@@ -47,32 +47,35 @@ static unsigned int __div64_32(u64 *n, unsigned int base)
 // public functions
 //
 
-WIFI_RAM_DATA_SECTION
-static uint8_t uxTskCriticalNesting = 0;
+IMAGE2_TEXT_SECTION
+void rtw_tsk_lock(void)
+{
+	rt_tsk_lock();
+}
 
-WIFI_RAM_TEXT_SECTION
+IMAGE2_TEXT_SECTION
+void rtw_tsk_unlock(void)
+{
+ 	rt_tsk_unlock();
+}
+
+//cli/sti - this need to finish in 1 ms, otherwise OS timing has problem
+IMAGE2_TEXT_SECTION
 void save_and_cli(void)
 {
     cli();
-	if (uxTskCriticalNesting== 0)
-		rt_tsk_lock();
-	uxTskCriticalNesting++;
 }
 
-WIFI_RAM_TEXT_SECTION
+IMAGE2_TEXT_SECTION
 void restore_flags(void)
 {
-	// assert(uxTskCrticialNesting>0);
-	uxTskCriticalNesting--;
-	if (uxTskCriticalNesting== 0)
- 		rt_tsk_unlock();
 	sti();
 }
 
-WIFI_RAM_DATA_SECTION
+IMAGE2_DATA_SECTION
 static uint8_t uxCriticalNesting = 0;
 
-WIFI_RAM_TEXT_SECTION
+IMAGE2_TEXT_SECTION
 void cli(void)
 {
 	if (uxCriticalNesting== 0)
@@ -80,7 +83,7 @@ void cli(void)
 	uxCriticalNesting++;
 }
 
-WIFI_RAM_TEXT_SECTION
+IMAGE2_TEXT_SECTION
 void sti(void)
 {
 	// assert(uxCrticialNesting>0);
@@ -95,7 +98,7 @@ void sti(void)
 #define one_us_cycles    ((1000UL-5UL)/6)
 #define delay_times (one_us_cycles/6)  
 
-WIFI_RAM_TEXT_SECTION
+IMAGE2_TEXT_SECTION
 void rtw_udelay_os(int us)
 {
 	uint32_t i, j;
@@ -128,7 +131,7 @@ void rtw_udelay_os(int us)
 	__enable_irq();
 }
 
-WIFI_RAM_TEXT_SECTION
+IMAGE2_TEXT_SECTION
 void rt_os_mdelay(int ms)
 {
 	osDelay(ms);
@@ -138,20 +141,20 @@ void rt_os_mdelay(int ms)
 // memory management
 //
 
-WIFI_RAM_TEXT_SECTION
+IMAGE2_TEXT_SECTION
 void* rtw_malloc(size_t size) 
 {
 	return mem_malloc(size);
 }
 
-WIFI_RAM_TEXT_SECTION
+IMAGE2_TEXT_SECTION
 void rtw_free(void* ptr)
 {
 	return mem_free(ptr);
 }
 
 
-WIFI_RAM_TEXT_SECTION
+IMAGE2_TEXT_SECTION
 int rtw_memcmp(void *dst, void *src, u32 sz)
 {
 	if ( memcmp(dst, src, sz) == 0 ) return _TRUE;
@@ -159,13 +162,13 @@ int rtw_memcmp(void *dst, void *src, u32 sz)
 	return _FALSE;
 }
 
-WIFI_RAM_TEXT_SECTION
+IMAGE2_TEXT_SECTION
 void rtw_memcpy(void* dst, void* src, u32 sz)
 {
     memcpy(dst, src, sz);
 }
 
-WIFI_RAM_TEXT_SECTION
+IMAGE2_TEXT_SECTION
 void rtw_memset(void *pbuf, int c, u32 sz)
 {
 	memset(pbuf, c, sz);
@@ -173,7 +176,7 @@ void rtw_memset(void *pbuf, int c, u32 sz)
 
 
 //osMutexDef(MutexSpinLock);
-WIFI_RAM_TEXT_SECTION
+IMAGE2_TEXT_SECTION
 void rtw_spinlock_init(_lock *plock)
 {
 
@@ -192,7 +195,7 @@ void rtw_spinlock_init(_lock *plock)
 #endif
 }
 
-WIFI_RAM_TEXT_SECTION
+IMAGE2_TEXT_SECTION
 void rtw_spinlock_free(_lock *plock)
 {
 #if 0
@@ -206,7 +209,7 @@ void rtw_spinlock_free(_lock *plock)
 #endif
 }
 
-WIFI_RAM_TEXT_SECTION
+IMAGE2_TEXT_SECTION
 int rtw_create_thread(osThreadDef_t* pthread_def, void (*task)(), void *argument,
         osPriority priority, uint32_t stack_size)
 {
@@ -236,7 +239,7 @@ struct _sema_T {
 	u32 _semaphore_data[2];
 };
 
-WIFI_RAM_TEXT_SECTION
+IMAGE2_TEXT_SECTION
 void rtw_init_sema(_sema *sema, int count)
 {
 	struct _sema_T *pSema;
@@ -260,7 +263,7 @@ void rtw_init_sema(_sema *sema, int count)
 	*sema = pSema;
 }
 
-WIFI_RAM_TEXT_SECTION
+IMAGE2_TEXT_SECTION
 int rtw_up_sema(_sema *sema)
 {
 	struct _sema_T *pSema;
@@ -283,7 +286,7 @@ int rtw_up_sema(_sema *sema)
 	
 }
 
-WIFI_RAM_TEXT_SECTION
+IMAGE2_TEXT_SECTION
 int	rtw_down_timeout_sema(_sema *sema, u32 timeout_ms)
 {
 	struct _sema_T *pSema;
@@ -305,7 +308,7 @@ int	rtw_down_timeout_sema(_sema *sema, u32 timeout_ms)
 	return osSemaphoreWait(id, timeout_ms);
 }
 
-WIFI_RAM_TEXT_SECTION
+IMAGE2_TEXT_SECTION
 int rtw_down_sema(_sema *sema)
 {
 	return rtw_down_timeout_sema(sema,osWaitForever);
@@ -314,7 +317,7 @@ int rtw_down_sema(_sema *sema)
 //
 // random
 //
-WIFI_RAM_TEXT_SECTION
+IMAGE2_TEXT_SECTION
 int rtw_random(void)
 {
 	u32 res = rtw_get_current_time();
@@ -325,7 +328,7 @@ int rtw_random(void)
 	return (int)seed;
 }
 
-WIFI_RAM_TEXT_SECTION
+IMAGE2_TEXT_SECTION
 void rtw_get_random_bytes(u8 *buf, int len)
 {
 	unsigned int ranbuf;
@@ -350,13 +353,13 @@ void rtw_get_random_bytes(u8 *buf, int len)
 //
 // Time management
 //
-WIFI_RAM_TEXT_SECTION
+IMAGE2_TEXT_SECTION
 u32 rtw_get_current_time(void)
 {
 	return rt_time_get();
 }
 
-WIFI_RAM_TEXT_SECTION
+IMAGE2_TEXT_SECTION
 u64 rtw_modular64(u64 n, u64 base)
 {
 	unsigned int __base = (base);
@@ -375,16 +378,15 @@ u64 rtw_modular64(u64 n, u64 base)
 // timer
 
 
-WIFI_RAM_DATA_SECTION
+IMAGE2_DATA_SECTION
 static TIMER_FUN timer_func[MAX_TIMER_ID]={NULL};
 
-WIFI_RAM_DATA_SECTION
+IMAGE2_DATA_SECTION
 static void* timer_func_cntx[MAX_TIMER_ID]={NULL};
 
-WIFI_RAM_DATA_SECTION
+IMAGE2_DATA_SECTION
 static ticker_event_t timer_func_event[MAX_TIMER_ID];
 
-WIFI_RAM_TEXT_SECTION
 static void rtw_timer_irq(uint32_t id) 
 {
     TIMER_FUN timer_f;
@@ -397,7 +399,7 @@ static void rtw_timer_irq(uint32_t id)
 	timer_f(timer_func_cntx[id]);
 }
 
-WIFI_RAM_TEXT_SECTION
+IMAGE2_TEXT_SECTION
 void rtw_init_timer(uint8_t *ptimer_id, TIMER_FUN pfunc,void* cntx, char* name)
 {
 	const ticker_data_t *_ticker_data;
@@ -425,7 +427,7 @@ void rtw_init_timer(uint8_t *ptimer_id, TIMER_FUN pfunc,void* cntx, char* name)
 }
 
 
-WIFI_RAM_TEXT_SECTION
+IMAGE2_TEXT_SECTION
 void rtw_set_timer(uint8_t timer_id, u32 delay_time)
 {
 	const ticker_data_t *_ticker_data;
@@ -437,7 +439,7 @@ void rtw_set_timer(uint8_t timer_id, u32 delay_time)
 	ticker_insert_event(_ticker_data, &timer_func_event[timer_id], delay_time*1000+ticker_read(_ticker_data), timer_id);
 }
 
-WIFI_RAM_TEXT_SECTION
+IMAGE2_TEXT_SECTION
 void rtw_cancel_timer(uint8_t timer_id)
 {
 	const ticker_data_t *_ticker_data;
@@ -449,7 +451,7 @@ void rtw_cancel_timer(uint8_t timer_id)
 	ticker_remove_event(_ticker_data, &timer_func_event[timer_id]);
 }
 
-WIFI_RAM_TEXT_SECTION
+IMAGE2_TEXT_SECTION
 void rtw_del_timer(uint8_t timer_id)
 {
 	if ( timer_id <0 || timer_id>=MAX_TIMER_ID ) return;

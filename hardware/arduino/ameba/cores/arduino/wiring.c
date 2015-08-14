@@ -26,7 +26,9 @@ extern "C" {
 #include "rt_time.h"
 
 #include "us_ticker_api.h"
+#include "section_config.h"
 
+IMAGE2_TEXT_SECTION
 void delay( uint32_t ms )
 {
 	osStatus ret;
@@ -39,12 +41,14 @@ void delay( uint32_t ms )
 }
 
 
+IMAGE2_TEXT_SECTION
 void delayMicroseconds(uint32_t us)
 {
 	rtw_udelay_os(us);
 }
 
 
+IMAGE2_TEXT_SECTION
 uint32_t millis( void )
 {
     // OS_TICK = 1000, so the same as ticks
@@ -52,6 +56,7 @@ uint32_t millis( void )
 }
 
 
+IMAGE2_TEXT_SECTION
 uint32_t micros( void ) 
 {
 	return us_ticker_read();

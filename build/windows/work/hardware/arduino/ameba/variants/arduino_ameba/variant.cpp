@@ -46,12 +46,14 @@ analogin_t   adc3;
 extern "C" {
 #endif
 
+#include "section_config.h"
 
 void __libc_init_array(void);
 
 /*
  * Pins descriptions
  */
+IMAGE2_DATA_SECTION 
 PinDescription g_APinDescription[]=
 {
   
@@ -178,8 +180,8 @@ void init( void )
 
 	init_hal_uart();
 	init_hal_i2c();
-	init_hal_adc();
-	init_hal_dac();
+	//init_hal_adc();
+	//init_hal_dac();
 	init_hal_wifi();
 	//_ticker_init();
 

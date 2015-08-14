@@ -82,7 +82,7 @@
 #define LWIP_TCP_KEEPALIVE          1
 
 // Debug Options
-#define LWIP_DEBUG
+#undef LWIP_DEBUG
 #define UDP_LPC_EMAC                LWIP_DBG_OFF
 #define SYS_DEBUG                   LWIP_DBG_OFF
 #define PPP_DEBUG                   LWIP_DBG_OFF

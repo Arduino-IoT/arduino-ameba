@@ -26,6 +26,7 @@
 #include "pinNames.h"
 #include "Objects.h"
 #include "hal_gpio.h"
+#include "section_config.h"
 
 
 static const u8 _GPIO_SWPORT_DR_TBL[] = {
@@ -42,9 +43,12 @@ typedef struct {
 } gpio_pin_t;
 
 
-static gpio_pin_t gpio_pin_struct[14];
+IMAGE2_DATA_SECTION
+gpio_pin_t gpio_pin_struct[14];
 
-extern void pinMode( uint32_t ulPin, uint32_t ulMode )
+
+IMAGE2_TEXT_SECTION
+void pinMode( uint32_t ulPin, uint32_t ulMode )
 {
 	//NeoJou
 	PinName pinname;
@@ -112,7 +116,8 @@ extern void pinMode( uint32_t ulPin, uint32_t ulMode )
 }
 
 
-extern void digitalWrite( uint32_t ulPin, uint32_t ulVal )
+IMAGE2_TEXT_SECTION
+void digitalWrite( uint32_t ulPin, uint32_t ulVal )
 {
 
 	gpio_pin_t *pGpio_pin_t;
@@ -152,7 +157,8 @@ extern void digitalWrite( uint32_t ulPin, uint32_t ulVal )
 
 }
 
-extern int digitalRead( uint32_t ulPin )
+IMAGE2_TEXT_SECTION
+int digitalRead( uint32_t ulPin )
 {
 	
 	gpio_t *pGpio_t;

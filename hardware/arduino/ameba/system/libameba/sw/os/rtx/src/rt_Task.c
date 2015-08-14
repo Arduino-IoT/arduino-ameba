@@ -40,22 +40,25 @@
 #include "rt_MemBox.h"
 #include "rt_Robin.h"
 #include "rt_HAL_CM.h"
+#include "section_config.h"
 
 /*----------------------------------------------------------------------------
  *      Global Variables
  *---------------------------------------------------------------------------*/
 
 /* Running and next task info. */
+IMAGE2_DATA_SECTION
 struct OS_TSK os_tsk;
 
 /* Task Control Blocks of idle demon */
+IMAGE2_DATA_SECTION
 struct OS_TCB os_idle_TCB;
 
 
 /*----------------------------------------------------------------------------
  *      Local Functions
  *---------------------------------------------------------------------------*/
-
+IMAGE2_TEXT_SECTION
 OS_TID rt_get_TID (void) {
   U32 tid;
 
@@ -82,7 +85,7 @@ void *__user_perthread_libspace (void) {
 #endif
 
 /*--------------------------- rt_init_context -------------------------------*/
-
+IMAGE2_TEXT_SECTION
 void rt_init_context (P_TCB p_TCB, U8 priority, FUNCP task_body) {
   /* Initialize general part of the Task Control Block. */
   p_TCB->cb_type = TCB;
@@ -103,7 +106,7 @@ void rt_init_context (P_TCB p_TCB, U8 priority, FUNCP task_body) {
 
 
 /*--------------------------- rt_switch_req ---------------------------------*/
-
+IMAGE2_TEXT_SECTION
 void rt_switch_req (P_TCB p_new) {
   /* Switch to next task (identified by "p_new"). */
   os_tsk.new_tsk   = p_new;
@@ -113,7 +116,7 @@ void rt_switch_req (P_TCB p_new) {
 
 
 /*--------------------------- rt_dispatch -----------------------------------*/
-
+IMAGE2_TEXT_SECTION
 void rt_dispatch (P_TCB next_TCB) {
   /* Dispatch next task if any identified or dispatch highest ready task    */
   /* "next_TCB" identifies a task to run or has value NULL (=no next task)  */
@@ -140,7 +143,7 @@ void rt_dispatch (P_TCB next_TCB) {
 
 
 /*--------------------------- rt_block --------------------------------------*/
-
+IMAGE2_TEXT_SECTION
 void rt_block (U16 timeout, U8 block_state) {
   /* Block running task and choose next ready task.                         */
   /* "timeout" sets a time-out value or is 0xffff (=no time-out).           */
@@ -159,7 +162,7 @@ void rt_block (U16 timeout, U8 block_state) {
 
 
 /*--------------------------- rt_tsk_pass -----------------------------------*/
-
+IMAGE2_TEXT_SECTION
 void rt_tsk_pass (void) {
   /* Allow tasks of same priority level to run cooperatively.*/
   P_TCB p_new;
@@ -174,7 +177,7 @@ void rt_tsk_pass (void) {
 
 
 /*--------------------------- rt_tsk_self -----------------------------------*/
-
+IMAGE2_TEXT_SECTION
 OS_TID rt_tsk_self (void) {
   /* Return own task identifier value. */
   if (os_tsk.run == NULL) {
@@ -185,7 +188,7 @@ OS_TID rt_tsk_self (void) {
 
 
 /*--------------------------- rt_tsk_prio -----------------------------------*/
-
+IMAGE2_TEXT_SECTION
 OS_RESULT rt_tsk_prio (OS_TID task_id, U8 new_prio) {
   /* Change execution priority of a task to "new_prio". */
   P_TCB p_task;
@@ -221,7 +224,7 @@ run:if (rt_rdy_prio() > new_prio) {
 }
 
 /*--------------------------- rt_tsk_delete ---------------------------------*/
-
+IMAGE2_TEXT_SECTION
 OS_RESULT rt_tsk_delete (OS_TID task_id) {
   /* Terminate the task identified with "task_id". */
   P_TCB task_context;
@@ -260,6 +263,7 @@ OS_RESULT rt_tsk_delete (OS_TID task_id) {
 /*--------------------------- rt_sys_init -----------------------------------*/
 
 #ifdef __CMSIS_RTOS
+IMAGE2_TEXT_SECTION
 void rt_sys_init (void) {
 #else
 void rt_sys_init (FUNCP first_task, U32 prio_stksz, void *stk) {
@@ -323,6 +327,7 @@ void rt_sys_init (FUNCP first_task, U32 prio_stksz, void *stk) {
 /*--------------------------- rt_sys_start ----------------------------------*/
 
 #ifdef __CMSIS_RTOS
+IMAGE2_TEXT_SECTION
 void rt_sys_start (void) {
   /* Start system */
 
