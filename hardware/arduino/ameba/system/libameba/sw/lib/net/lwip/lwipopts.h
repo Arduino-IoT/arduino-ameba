@@ -121,6 +121,7 @@
 //NeoJou
 #if 1 // for Ameba
 
+
 /* MEM_SIZE: the size of the heap memory. If the application will send
 a lot of data that needs to be copied, this should be set high. */
 #define MEM_SIZE                (32*1024)
@@ -139,6 +140,7 @@ a lot of data that needs to be copied, this should be set high. */
 #define LWIP_STATS				0
 
 #define LWIP_ALLOW_MEM_FREE_FROM_OTHER_CONTEXT 1
+#define LWIP_NETIF_STATUS_CALLBACK  1
 
 #else // for original settings
 

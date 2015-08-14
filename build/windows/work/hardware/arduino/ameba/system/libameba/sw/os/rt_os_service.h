@@ -121,6 +121,12 @@ extern u32 rtw_get_current_time(void);
 extern u64 rtw_modular64(u64 n, u64 base);
 
 // Timer
+#define time_after(a,b)    ((long)(b) - (long)(a) < 0)
+#define time_before(a,b)   time_after(b,a)
+ 
+#define time_after_eq(a,b) ((long)(a) - (long)(b) >= 0)
+#define time_before_eq(a,b)    time_after_eq(b,a)
+
 typedef u8 _timer;
 
 #define MAX_TIMER_ID	16

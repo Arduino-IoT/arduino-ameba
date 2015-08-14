@@ -131,6 +131,9 @@ extern uint8_t wl_wifi_get_current_encType(void* padapter1);
 
 extern wl_err_t wl_wifi_get_host_by_name(void* padapter1, const char *aHostName, uint32_t *paddr);
 
+extern void wl_wifi_indicate_connect(void* padapter);
+extern void wl_wifi_indicate_disconnect(void* padapter);
+
 
 #ifdef __cplusplus
 }
