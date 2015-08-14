@@ -63,10 +63,10 @@ ${TOOLCHAIN}-strip ./target_pure.axf
 ${TOOLCHAIN}-objcopy -j .ram.start.table -j .ram_image1.text \
 -Obinary  ./target_pure.axf ./ram_1.bin
 
-${TOOLCHAIN}-objcopy -j .image2.start.table -j .ram_image2.text \
+${TOOLCHAIN}-objcopy -j .image2.start.table -j .ram_image2.text -j .ARM.exidx \
 -Obinary  ./target_pure.axf ./ram_2.bin
 
-${TOOLCHAIN}-objcopy -j .image3 -j .relocate -j .ARM.exidx -j .sdr_data \
+${TOOLCHAIN}-objcopy -j .image3 -j .sdr_data \
 -Obinary  ./target_pure.axf ./ram_3.bin
 
 ${TOOLCHAIN}-nm.exe target.axf | sort > target.map
