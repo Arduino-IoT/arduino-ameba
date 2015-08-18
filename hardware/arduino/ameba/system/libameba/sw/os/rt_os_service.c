@@ -165,13 +165,24 @@ int rtw_memcmp(void *dst, void *src, u32 sz)
 IMAGE2_TEXT_SECTION
 void rtw_memcpy(void* dst, void* src, u32 sz)
 {
-    memcpy(dst, src, sz);
+	int i;
+	u8* dst1 = (u8*)dst;
+	u8* src1 = (u8*)src;
+	for (i=0; i<sz; i++)
+		*dst1++ = *src1++;
+    //memcpy(dst, src, sz);
 }
 
 IMAGE2_TEXT_SECTION
 void rtw_memset(void *pbuf, int c, u32 sz)
 {
-	memset(pbuf, c, sz);
+	int i;
+	u8* pbuf1 = (u8*)pbuf;
+	u8 c1 = (u8)c;
+
+	for (i=0; i<sz; i++, pbuf1++)
+		*pbuf1 = c;
+	//memset(pbuf, c, sz);
 }
 
 

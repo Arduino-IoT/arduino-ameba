@@ -110,14 +110,14 @@ uint8_t WiFiDrv1::getScanNetworks()
 
 }
 
-int8_t WiFiDrv1::wifiSetPassphrase(char* ssid, uint8_t ssid_len, const char *passphrase, const uint8_t len)
+int8_t WiFiDrv1::wifiSetPassphrase(char* ssid, uint8_t ssid_len, const char *passphrase, const uint8_t passphrase_len)
 {
 	wl_err_t ret = WL_SUCCESS;
 
-	if ( passphrase == NULL || len == 0 ) 
-		ret = wl_wifi_connect(padapter, ssid, ssid_len,RTW_SECURITY_OPEN, passphrase, len);
+	if ( passphrase == NULL || passphrase_len == 0 ) 
+		ret = wl_wifi_connect(padapter, ssid, ssid_len,RTW_SECURITY_OPEN, NULL, 0);
 	else
-		ret = wl_wifi_connect(padapter, ssid, ssid_len,RTW_SECURITY_WPA2_AES_PSK, passphrase, len);
+		ret = wl_wifi_connect(padapter, ssid, ssid_len,RTW_SECURITY_WPA2_AES_PSK, passphrase, passphrase_len);
 	
 	if ( ret == WL_SUCCESS ) 
 		if_enabled = true;

@@ -21,10 +21,8 @@
 #ifndef __WIFI_INTFS_H_
 #define __WIFI_INTFS_H_
 
-// options
 
-#define   MAX_JOIN_TIMEOUT	3000
-
+#include "wifi_opts.h"
 
 
 #ifdef __cplusplus
@@ -35,21 +33,17 @@ extern "C" {
 #include "rtw_skbuff.h"
 
 typedef enum {
-        WL_FAILURE = -1,
-        WL_SUCCESS = 1,
-//        WL_NOEFFECT,
-//        WL_OOM,
-        WL_INVALID_LENGTH,
-        WL_NOT_SUPPORTED,
-//        WL_ABSORBED,
-        WL_RESOURCES,
-        WL_BUSY,
-        WL_RETRY, 
-        WL_INVALID_ARGS,
-//        WL_AVAIL,
-        WL_CARD_FAILURE,        
-//        WL_FIRMWARE_INVALID,   
-
+    WL_FAILURE = -1,
+    WL_SUCCESS = 1,
+    WL_INVALID_LENGTH,
+    WL_NOT_SUPPORTED,
+    WL_RESOURCES,
+    WL_BUSY,
+    WL_RETRY, 
+    WL_INVALID_ARGS,
+    WL_CARD_FAILURE,        
+	WL_NO_AP,
+	WL_WRONG_SECURITY
 } wl_err_t;
 
 
@@ -134,6 +128,7 @@ extern wl_err_t wl_wifi_get_host_by_name(void* padapter1, const char *aHostName,
 extern void wl_wifi_indicate_connect(void* padapter);
 extern void wl_wifi_indicate_disconnect(void* padapter);
 
+extern void wl_set_scan_lifetime(void* padapter1, u8 lifetime);
 
 #ifdef __cplusplus
 }

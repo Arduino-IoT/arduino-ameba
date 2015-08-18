@@ -19,9 +19,7 @@
 #include "variant.h"
 #include <stdarg.h>
 
-#ifdef __cplusplus
 extern "C" {
-#endif
 
 #include "rtl8195a.h"
 #include "hal_irqn.h"
@@ -34,17 +32,13 @@ analogin_t   adc1;
 analogin_t   adc2;
 analogin_t   adc3;
 
-#ifdef __cplusplus
-  }
-#endif
+} // extern C
 
 #include "wire.h"
 #include "WiFi1.h"
 
 
-#ifdef __cplusplus
 extern "C" {
-#endif
 
 #include "section_config.h"
 
@@ -82,11 +76,10 @@ void UART_Handler(void);
 i2c_t i2cmaster_wire1;
 
 
-#ifdef __cplusplus
-  }
-#endif
+} // extern C
 
 // LogUart
+IMAGE2_DATA_SECTION 
 static RingBuffer rx_buffer0;
 
 UARTClass Serial(UART_LOG_IRQ, &rx_buffer0);
@@ -95,13 +88,14 @@ void serialEvent() __attribute__((weak));
 void serialEvent() { }
 
 // IT handlers
+IMAGE2_TEXT_SECTION 
 void UART_Handler(void)
 {
   Serial.IrqHandler();
 }
 
 
-static void ReRegisterSerial(void)
+static inline void ReRegisterSerial(void)
 {
     IRQ_HANDLE          UartIrqHandle;
     
@@ -117,16 +111,17 @@ static void ReRegisterSerial(void)
     InterruptRegister(&UartIrqHandle); 
 }
 
-
+IMAGE2_TEXT_SECTION 
 void init_hal_uart(void)
 {
 	ReRegisterSerial();
 }
 
 //I2C
-
+IMAGE2_DATA_SECTION 
 TwoWire Wire1;
 
+IMAGE2_TEXT_SECTION 
 void init_hal_i2c(void)
 {
 	Wire1.setpin(PD_7, PD_6);
@@ -134,7 +129,7 @@ void init_hal_i2c(void)
 }
 
 // adc
-
+IMAGE2_TEXT_SECTION 
 void init_hal_adc(void)
 {
     analogin_init(&adc1, AD_1);
@@ -145,21 +140,24 @@ void init_hal_adc(void)
 
 
 // DAC
+IMAGE2_DATA_SECTION
 DACClass1 DAC0;
 
+IMAGE2_TEXT_SECTION
 void init_hal_dac(void)
 {
     DAC0.begin(0);
 }
 
 // WiFi
-
+IMAGE2_TEXT_SECTION
 void init_hal_wifi(void)
 {
 	WiFi1.init();
 }
 // ----------------------------------------------------------------------------
 
+IMAGE2_TEXT_SECTION
 void serialEventRun(void)
 {
 
@@ -171,11 +169,14 @@ void serialEventRun(void)
 }
 
 
+IMAGE2_TEXT_SECTION
 void init( void )
 {
 
 	// Initialize C library
 	__libc_init_array();
+
+	
 	//rtl_libc_init();
 
 	init_hal_uart();
@@ -189,7 +190,7 @@ void init( void )
 	ConfigDebugInfo&= (~(_DBG_GPIO_ | _DBG_UART_));
 	ConfigDebugErr&= (~(_DBG_MISC_));
 
-
+	
 }
 
 

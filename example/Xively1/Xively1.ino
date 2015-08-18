@@ -14,7 +14,7 @@ Copyright (c) 2013 Calum Barnes
 #include <Xively.h>
 #include "DHT1.h"
 
-char ssid[] = "NeoTPLink"; //  your network SSID (name) 
+char ssid[] = "YourAP"; //  your network SSID (name) 
 char pass[] = "yourpassword";    // your network password (use for WPA, or use as key for WEP)
 int keyIndex = 0;            // your network key Index number (needed only for WEP)
 
@@ -65,7 +65,8 @@ void setup() {
   Serial.println("Starting single datastream upload to Xively...");
   Serial.println();
 
-  status = WiFi1.begin(ssid);
+  status = WiFi1.begin(ssid, pass);
+  //status = WiFi1.begin(ssid);
   if ( status != WL_CONNECTED) { 
     Serial.println("Couldn't get a wifi connection");
     // don't do anything else:

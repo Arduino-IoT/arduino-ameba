@@ -40,7 +40,7 @@ WIFI_RAM_TEXT_SECTION
 void	rtw_init_queue(_queue	*pqueue)
 {
 	rtw_init_listhead(&(pqueue->queue));
-	rtw_spinlock_init(&(pqueue->lock));
+	//rtw_spinlock_init(&(pqueue->lock));
 }
 
 WIFI_RAM_TEXT_SECTION

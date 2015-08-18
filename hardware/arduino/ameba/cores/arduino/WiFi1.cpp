@@ -51,7 +51,6 @@ int WiFiClass1::begin(char* ssid, const char *passphrase)
 		ret =  wiFiDrv1.wifiSetPassphrase(ssid, strlen(ssid), passphrase, strlen(passphrase));
 	
 	if ( ret == WL_SUCCESS ) {
-		DiagPrintf("connect successfully\r\n");
 		ret = this->status();
 	}
 	return ret;
