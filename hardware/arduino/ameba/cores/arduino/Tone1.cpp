@@ -66,9 +66,9 @@ void Tone1::calculate_sinewave(uint16_t *pBuffer, unsigned int buf_size)
 }
 
 // Create the sinewave buffer
-void Tone1::calculate_zero(uint16_t *pBuffer)
+void Tone1::calculate_zero(uint16_t *pBuffer, int s)
 {
-  for (int i = 0; i < 250; i++) {
+  for (int i = 0; i < s; i++) {
      pBuffer[i] = 0x800;
   }
 }
@@ -92,10 +92,8 @@ void Tone1::tone(unsigned int frequency, unsigned long duration)
 	
 	repeat = 250*duration/buffer_size; // duration = 1000/time ; 10us
 	if ( repeat < 1 ) repeat = 1;
-	//rtl_printf("buffer_size=%d \r\n", buffer_size);
-	//rtl_printf("repeat=%d \r\n", repeat);
-		
-	DAC0.send16((uint16_t*)buffer, buffer_size, repeat);
+
+	DAC0.send16_repeat((uint16_t*)buffer, buffer_size, repeat);
 	
 }
 
@@ -106,11 +104,11 @@ void Tone1::noTone(unsigned long duration)
 	unsigned int repeat;
 
 	buffer_size = 250;	
-	calculate_zero(buffer);
+	calculate_zero(buffer, buffer_size);
 
 	repeat = 250*duration/buffer_size; // duration = 1000/time ; 10us
 	if ( repeat < 1 ) repeat = 1;
 
-	DAC0.send16((uint16_t*)buffer, buffer_size, repeat);
+	DAC0.send16_repeat((uint16_t*)buffer, buffer_size, repeat);
 }
 

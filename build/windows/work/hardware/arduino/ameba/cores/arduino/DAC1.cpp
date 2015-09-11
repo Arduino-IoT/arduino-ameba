@@ -8,15 +8,17 @@
  * published by the Free Software Foundation.
  */
 
+#include <Arduino.h>
 #include <DAC1.h>
 
-
-#if 1
 
 
 extern "C" {
 
 #include "hal_dac.h"
+#include "rt_os_service.h"
+
+#include "section_config.h"
 
 }
 
@@ -31,15 +33,18 @@ void DACClass1::dacc_init() {
 	this->dac.pIrqHandleDACGdma = NULL;
 }
 
-void DACClass1::begin(uint32_t period) 
+void DACClass1::begin(uint8_t data_rate) 
 {
 	int pin = DAC_pin0;
-	
+
+
 	// init DAC
 	
     PSAL_DAC_HND        pSalDACHND      = NULL;
 
 
+	this->frequency = (data_rate == DAC_DATA_RATE_10K )? 10000 : 25000;
+	
     dacc_init();
 
     /* Check the user define setting and the given index */
@@ -54,8 +59,6 @@ void DACClass1::begin(uint32_t period)
     pSalDACHND      = &(this->dac.pSalDACMngtAdpt->pSalHndPriv->SalDACHndPriv);
     /* Assign the internal HAL initial data pointer to the SAL handle */
     pSalDACHND->pInitDat    = this->dac.pSalDACMngtAdpt->pHalInitDat;
-    /* Assign the internal user callback pointer to the SAL handle */
-    pSalDACHND->pUserCB     = this->dac.pSalDACMngtAdpt->pUserCB;
     
     this->dac.pDACVeriHnd = &(this->dac.pSalDACMngtAdpt->pSalHndPriv->SalDACHndPriv);
 
@@ -63,8 +66,9 @@ void DACClass1::begin(uint32_t period)
 
 	this->dac.pDACVeriHnd->DevNum	  = pin;
 	RtkDACLoadDefault(this->dac.pDACVeriHnd);
-	this->dac.pDACVeriHnd->pInitDat->DACDataRate	  =   DAC_DATA_RATE_250K;
-	//pDACVeriHnd->pInitDat->DACDataRate		  =   DAC_DATA_RATE_10K;
+	this->dac.pDACVeriHnd->pInitDat->DACDataRate	  =   data_rate;
+	//this->dac.pDACVeriHnd->pInitDat->DACDataRate	  =   DAC_DATA_RATE_250K;
+	//this->dac.pDACVeriHnd->pInitDat->DACDataRate	  =   DAC_DATA_RATE_10K;
 	this->dac.pDACVeriHnd->pInitDat->DACEndian		  =   DAC_DATA_ENDIAN_LITTLE;
 	this->dac.pDACVeriHnd->pInitDat->DACBurstSz 	  =   10;
 
@@ -80,57 +84,13 @@ void DACClass1::begin(uint32_t period)
 	RtkDACInit(this->dac.pDACVeriHnd);
 	this->dac.pHALDACGdmaAdpt->MuliBlockCunt	  = 2;
 	this->dac.pHALDACGdmaAdpt->MaxMuliBlock 	  = 2;//MaxLlp;
+
+	//this->is_sent = _FALSE;
+	this->dac_current_pos = 0;
 }
 
 
 
-void DACClass1::transform_buffer8(uint16_t* pBuffer, uint8_t* in_Buffer8, unsigned int len)
-{
-	for (int i = 0; i < len; i++) {
-	   pBuffer[i] = transform_dac_val_to_bit12(in_Buffer8[i], 8);
-	   
-	}
-}
-
-
-#if 1
-
-#else
-unsigned int DACClass1::transform_buffer8_from_11K_to_250K(uint16_t* pBuffer, uint8_t* in_Buffer, unsigned int len)
-{
-    unsigned int new_len;
-	double steps, val1, val2, pre_val;
-	unsigned int new_len_max = len * 250 / 11;
-	unsigned int pre_pos =0, new_pos=0, in_pos=0; 
-
-    if ( len <= 0 ) return 0;
-
-	pBuffer[0] = wav_transform_to_bit12(in_Buffer[0], 8);
-	if ( len < 1 ) {
-		return 1;
-	}
-	
-	val1 = (double)(transform_dac_val_to_bit12(in_Buffer[0], 8));
-	val2 = (double)(transform_dac_val_to_bit12(in_Buffer[1], 8));
-	pre_pos = 0;
-	steps = (val2-val1)*11.0/250.0; pre_val = val1;
-	for (int i = 1; i < new_len_max-1; i++) {
-	   in_pos = i * 11 / 250;
-	   if ( in_pos == pre_pos ) {
-	   	 pre_val = pre_val+steps;
-	   } else {
-		   val1 = (double)(transform_dac_val_to_bit12(in_Buffer[pre_pos], 8));
-		   val2 = (double)(transform_dac_val_to_bit12(in_Buffer[in_pos], 8));
-		   steps = (val2-val1)*11.0/250.0; pre_val = val1;
-		   pre_pos = in_pos;
-	   }	   
-	   pBuffer[i] = (uint16_t)(transform_dac_val((uint16_t)round(pre_val)));
-	}
-	
-	pBuffer[new_len_max-1] = (uint16_t)(transform_dac_val((uint16_t)round(val2)));	
-	return new_len_max;
-}
-#endif
 
 unsigned int DACClass1::transform_buffer16_to_250K(uint16_t* pBuffer, uint16_t* in_Buffer, unsigned int len, unsigned int from_bps) {
 	
@@ -143,7 +103,7 @@ unsigned int DACClass1::transform_buffer16_to_250K(uint16_t* pBuffer, uint16_t* 
 
 	val1 = (double)(in_Buffer[0]);
 	if ( len == 1 ) {
-		pBuffer[0] = transform_dac_val((uint16_t)round(val1));	
+		pBuffer[0] = transform_dac_val(in_Buffer[0]);	
 		return 1;
 	}
 	
@@ -162,189 +122,212 @@ unsigned int DACClass1::transform_buffer16_to_250K(uint16_t* pBuffer, uint16_t* 
 		   pre_val = val1;
 		   pre_pos = in_pos;
 	   }
-	   pBuffer[i] = (uint16_t)(transform_dac_val((uint16_t)round(pre_val)));
+	   pBuffer[i] = transform_dac_val((uint16_t)round(pre_val));
 	}
 	
-	pBuffer[new_len_max-1] = (uint16_t)(transform_dac_val((uint16_t)round(val2)));	
+	pBuffer[new_len_max-1] = transform_dac_val((uint16_t)round(val2));	
 	return new_len_max;
 }
 
 
-
-void DACClass1::send8_from_11K_to_250K(uint8_t* buffer, unsigned int len)
+int DACClass1::transform_buffer16_to_10K(uint16_t* pBuffer, uint16_t* in_Buffer, unsigned int len, unsigned int from_bps) 
 {
-	int new_max_len = MAX_BUFFER_SIZE*11/250;
-	int new_len;
+	uint16_t val;
+
+	int new_len = len * 10 / from_bps;
 	
-	if ( len <= new_max_len ) {
-		// handle buffer 
-		uint16_t *pBuffer = (uint16_t*)(&dac_buffer[dac_buffer_page][0]);
-		dac_buffer_page = ( dac_buffer_page + 1 ) % 2;
-		
-		new_len = transform_buffer8_from_11K_to_250K(pBuffer, buffer, len);
-		send((uint32_t*)pBuffer, new_len, 1);
-	
-	} else {
-			send8_from_11K_to_250K(buffer, new_max_len);
-			send8_from_11K_to_250K((uint8_t*)(&buffer[new_max_len]), len - new_max_len);
+    if ( len <= 0 ) return 0;
+
+	val = in_Buffer[0];
+	if ( len == 1 ) {
+		pBuffer[0] = transform_dac_val(val);	
+		return 1;
 	}
+
+	for (int i=0; i<new_len; i++) {
+		pBuffer[i] = transform_dac_val(in_Buffer[i*from_bps/10]);
+	}
+	return new_len;	
 }
 
 
-void DACClass1::send8(uint8_t* buffer, unsigned int len, unsigned int repeat)
+
+void DACClass1::send16_freq(uint16_t* buffer, unsigned int len, unsigned int freq)
 {
-	if ( len <= MAX_BUFFER_SIZE ) {
-		// handle buffer 
-		uint16_t *pBuffer = (uint16_t*)(&dac_buffer[dac_buffer_page][0]);
-		dac_buffer_page = ( dac_buffer_page + 1 ) % 2;
-		
-		transform_buffer8(pBuffer, buffer, len);
-		send((uint32_t*)pBuffer, len, repeat);
+
+	uint16_t *pBuffer;
+	int new_len;
+
+	// handle buffer 
+	pBuffer = (uint16_t*)(&dac_buffer[dac_buffer_page][0]);
+	new_len = transform_buffer16_to_10K(pBuffer, buffer, len, freq);
+	send((uint32_t*)pBuffer, new_len);
+	dac_buffer_page = ( dac_buffer_page + 1 ) % MAX_DAC_BUFFER_NUM;
+}
+
+
+void DACClass1::send16(uint16_t* buffer, unsigned int len)
+{
+	uint16_t *pBuffer;
+
+//NeoJou
+#if 1
+	for (int i=0; i< len ; i++ ) {
+		pBuffer = (uint16_t*)(&dac_buffer[dac_buffer_page][dac_current_pos++]);
+		*pBuffer = transform_dac_val(buffer[i]);
+	}
 	
-	} else {
-		for (int i=0; i<repeat; i++) {
-			send8(buffer, MAX_BUFFER_SIZE, 1);
-			send8((uint8_t*)(&buffer[MAX_BUFFER_SIZE]), len - MAX_BUFFER_SIZE, 1);
+	send((uint32_t*)&dac_buffer[dac_buffer_page][0], dac_current_pos);
+	dac_current_pos = 0;
+	dac_buffer_page = ( dac_buffer_page + 1 ) % MAX_DAC_BUFFER_NUM;
+
+
+#else
+	for (int i=0; i< len ; i++ ) {
+		pBuffer = (uint16_t*)(&dac_buffer[dac_buffer_page][dac_current_pos++]);
+		*pBuffer = transform_dac_val(buffer[i]);
+		if ( dac_current_pos >= MAX_DAC_BUFFER_SIZE ) {
+			send((uint32_t*)&dac_buffer[dac_buffer_page][0], MAX_DAC_BUFFER_SIZE);
+			dac_current_pos = 0;
+			dac_buffer_page = ( dac_buffer_page + 1 ) % MAX_DAC_BUFFER_NUM;
 		}
 	}
-}
-
-#if 0
-void DACClass1::send16_from_8K_to_250K(uint16_t* buffer, unsigned int len)
-{
-	int new_max_len = MAX_BUFFER_SIZE*8/250;
-	int new_len;
-	
-	if ( len <= new_max_len ) {
-		// handle buffer 
-		uint16_t *pBuffer = (uint16_t*)(&dac_buffer[dac_buffer_page][0]);
-		dac_buffer_page = ( dac_buffer_page + 1 ) % 2;
-		
-		new_len = transform_buffer16_to_250K(pBuffer, buffer, len, 8);
-		send((uint32_t*)pBuffer, new_len, 1);
-	
-	} else {
-			send16_from_8K_to_250K(buffer, new_max_len);
-			send16_from_8K_to_250K((uint16_t*)(&buffer[new_max_len]), len - new_max_len);
-	}
-}
 #endif
 
-void DACClass1::send16_freq(uint16_t* buffer, unsigned int len, int freq)
+}
+
+void DACClass1::send16_repeat(uint16_t* buffer, unsigned int len, int repeat)
 {
-	int new_max_len = MAX_BUFFER_SIZE* freq/250;
-	int new_len;
-	
-	if ( len <= new_max_len ) {
-		// handle buffer 
-		uint16_t *pBuffer = (uint16_t*)(&dac_buffer[dac_buffer_page][0]);
-		dac_buffer_page = ( dac_buffer_page + 1 ) % 2;
-		
-		new_len = transform_buffer16_to_250K(pBuffer, buffer, len, freq);
-		send((uint32_t*)pBuffer, new_len, 1);
-	
-	} else {
-			send16_freq(buffer, new_max_len, freq);
-			send16_freq((uint16_t*)(&buffer[new_max_len]), len - new_max_len, freq);
+	uint16_t *pBuffer;
+
+	if ( len > MAX_DAC_BUFFER_SIZE ) {
+		DiagPrintf("%s : ERROR len(%d) > MAX_DAC_BUFFER_SIZE(%d) \r\n", __FUNCTION__, len, MAX_DAC_BUFFER_SIZE );
+		return;
 	}
+	
+	pBuffer = (uint16_t*)(&dac_buffer[dac_buffer_page][0]);
+	for (int i=0; i< len ; i++ ) {
+		pBuffer[i] = transform_dac_val(buffer[i]);
+	}
+	send((uint32_t*)pBuffer, len, repeat);
+
+	dac_buffer_page = ( dac_buffer_page + 1 ) % MAX_DAC_BUFFER_NUM;
+	
 }
 
 
-void DACClass1::send16(uint16_t* buffer, unsigned int len, unsigned int repeat)
+void DACClass1::send(uint32_t* buffer, unsigned int len, int repeat)
 {
-		PSAL_DAC_HND	    pSalDACHND;  
-		PHAL_GDMA_ADAPTER	pHALDACGdmaAdpt    = NULL;
+	PSAL_DAC_HND	    pSalDACHND;  
+	PHAL_GDMA_ADAPTER	pHALDACGdmaAdpt;
+    PSAL_DAC_HND_PRIV   pSalDACHNDPriv;
+    PSAL_DAC_MNGT_ADPT  pSalDACMngtAdpt;	
+	int count = 0;
+	PSAL_DAC_USER_CB pUserCB;
+	static int is_init = _FALSE;
 
+	pSalDACHND = this->dac.pDACVeriHnd;
+	pHALDACGdmaAdpt = this->dac.pHALDACGdmaAdpt;
+    pSalDACHNDPriv  = CONTAINER_OF(pSalDACHND, SAL_DAC_HND_PRIV, SalDACHndPriv);
+    pSalDACMngtAdpt = CONTAINER_OF(pSalDACHNDPriv->ppSalDACHnd, SAL_DAC_MNGT_ADPT, pSalHndPriv);
 
-	if ( len <= MAX_BUFFER_SIZE ) {
-
-		// handle buffer 
-		uint16_t *pBuffer = (uint16_t*)(&dac_buffer[dac_buffer_page][0]);
-		dac_buffer_page = ( dac_buffer_page + 1 ) % 2;
-
-		for (int i = 0; i < len; i++) {
-		   pBuffer[i] = transform_dac_val(buffer[i]);
-		}
-		
-		send((uint32_t*)pBuffer, len, repeat);
-	} else {
-		for (int i=0; i<repeat; i++) {
-			send16(buffer, MAX_BUFFER_SIZE, 1);
-			send16((uint16_t*)(((uint16_t*)(buffer))+MAX_BUFFER_SIZE), len - MAX_BUFFER_SIZE, 1);
-		}
-	}
-}
-
-
-void DACClass1::send(uint32_t* buffer, unsigned int len, unsigned int repeat)
-{
-		PSAL_DAC_HND	    pSalDACHND;  
-		PHAL_GDMA_ADAPTER	pHALDACGdmaAdpt    = NULL;
-		int count = 0;
-
-
-		if ( len <= MAX_BUFFER_SIZE ) {
-			pSalDACHND = this->dac.pDACVeriHnd;
-			pHALDACGdmaAdpt = this->dac.pHALDACGdmaAdpt;
-		
-			while ( pHALDACGdmaAdpt->MuliBlockCunt		< pHALDACGdmaAdpt->MaxMuliBlock ) { // not finish send yet
-			  HalDelayUs(1);
-			}
-		//	  RtkDACWait();
-		
 			
-			pSalDACHND->pTXBuf 			= &this->DACTxBuf;
-			pSalDACHND->pTXBuf->DataLen	= len/2;
-			pSalDACHND->pTXBuf->pDataBuf	= buffer;
-		
-			pHALDACGdmaAdpt->MuliBlockCunt		= 1;
-			pHALDACGdmaAdpt->MaxMuliBlock		= repeat+1;//MaxLlp;
-		
-			RtkDACSend(pSalDACHND);
-		} else {
-			for (int i=0; i<repeat; i++) {
-				send(buffer, MAX_BUFFER_SIZE, 1);
-				send((uint32_t*)(((uint16_t*)(buffer))+MAX_BUFFER_SIZE), len - MAX_BUFFER_SIZE, 1);
-			}
+	if ( is_init == _FALSE ) { // first sent
+
+
+		pSalDACMngtAdpt->pUserCB = (PSAL_DAC_USER_CB)rtw_malloc(sizeof(SAL_DAC_USER_CB));
+		pUserCB = pSalDACMngtAdpt->pUserCB;
+		DiagPrintf(" DAC %s pUserCB : 0x%x \r\n", __FUNCTION__, pUserCB);
+		pUserCB->dataLen = len/2;
+		pUserCB->pBuf = buffer;
+		pUserCB->repeat = repeat;
+		pUserCB->next = (PSAL_DAC_USER_CB)rtw_malloc(sizeof(SAL_DAC_USER_CB));
+		pUserCB = pUserCB->next;
+
+		for (int i=1; i<MAX_DAC_BUFFER_NUM-1; i++) {
+			DiagPrintf(" DAC %s pUserCB : 0x%x \r\n", __FUNCTION__, pUserCB);
+			pUserCB->pBuf = NULL;
+			pUserCB->next = (PSAL_DAC_USER_CB)rtw_malloc(sizeof(SAL_DAC_USER_CB));
+			pUserCB = pUserCB->next;
 		}
 
+		DiagPrintf(" DAC %s pUserCB : 0x%x \r\n", __FUNCTION__, pUserCB);
+		pUserCB->pBuf = NULL;
+		pUserCB->next =	pSalDACMngtAdpt->pUserCB;
+		pSalDACMngtAdpt->pUserCB_head = pSalDACMngtAdpt->pUserCB;
+		pSalDACMngtAdpt->pUserCB_tail = pSalDACMngtAdpt->pUserCB->next;
+
+
+		pUserCB = pSalDACMngtAdpt->pUserCB_head;
+		
+		pSalDACHND->pTXBuf			= &this->DACTxBuf;
+		pSalDACHND->pTXBuf->DataLen = pUserCB->dataLen;
+		pSalDACHND->pTXBuf->pDataBuf	= pUserCB->pBuf;
+		
+		pHALDACGdmaAdpt->MuliBlockCunt		= 1;
+		pHALDACGdmaAdpt->MaxMuliBlock		= 2;//MaxLlp;
+		
+		RtkDACSend(pSalDACHND);
+		pSalDACMngtAdpt->isSent=1;
+		is_init = _TRUE;
+
+	}
+	else {
+		 int i;
+		 PSAL_DAC_USER_CB pUserCB; 
+
+		 pUserCB = pSalDACMngtAdpt->pUserCB_tail;
+		 if (pUserCB->pBuf != NULL ) {
+			 while (1) {
+			 	cli();
+			 	if ( pUserCB->pBuf == NULL ) {
+					sti();
+					break;
+			 	}
+				sti();
+			 	delay(1);				
+			 }
+
+		 }
+
+		 
+		 cli();
+		 pUserCB->dataLen = len/2;
+		 pUserCB->pBuf = buffer; 
+		 pUserCB->repeat = repeat;
+		 pSalDACMngtAdpt->pUserCB_tail = pUserCB->next;
+		 sti(); 		 
+
+		if ( pSalDACMngtAdpt->isSent == 0 ) {
+			pUserCB = pSalDACMngtAdpt->pUserCB_head;
+			
+			pSalDACHND->pTXBuf			= &this->DACTxBuf;
+			pSalDACHND->pTXBuf->DataLen = pUserCB->dataLen;
+			pSalDACHND->pTXBuf->pDataBuf	= pUserCB->pBuf;
+			
+			pHALDACGdmaAdpt->MuliBlockCunt		= 1;
+			pHALDACGdmaAdpt->MaxMuliBlock		= 2;//MaxLlp;
+			
+			RtkDACSend(pSalDACHND);
+			pSalDACMngtAdpt->isSent=1;			
+		}
+	}
 }
+
+
 
 uint16_t DACClass1::transform_dac_val(uint16_t val) 
 {
-  
-    if ( val >= 0x800 ) {
-      	  val -= 0x800;
-    	  if ( val > this->MAXDACVAL ) val = this->MAXDACVAL;
-    } else {
-    	  val += 0x800;
-    	  if ( val < this->MINDACVAL ) val = this->MINDACVAL;
-    }
-   
-   return val;   
+	 if ( val >= 0x800 ) {
+		   val -= 0x800;
+		   if ( val > this->MAXDACVAL ) val = this->MAXDACVAL;
+	 } else {
+		   val += 0x800;
+		   if ( val < this->MINDACVAL ) val = this->MINDACVAL;
+	 }
+	
+	return val;   
 }
-
-#if 0
-uint16_t DACClass1::wav_transform_to_bit12(uint16_t val8, uint bits) 
-{
-    uint16_t val;
-
-	if ( bits < 8 ) {
-		return 0;
-	} else if ( bits <= 12) {
-		val = (val8 << (12-bits));
-	} else if ( bits <= 16 ) {
-		val = (val8 >> (bits-12));
-	} else {
-		return 0;
-	}
-
-	if ( val >= 0x800 && val < this->MINDACVAL ) val = this->MINDACVAL;
-	if ( val < 0x800 && val > this->MAXDACVAL) val = this->MAXDACVAL;
-
-	return val;       
-}
-#endif
 
 uint16_t DACClass1::transform_dac_val_to_bit12(uint16_t val8, uint bits) 
 {
@@ -363,131 +346,45 @@ uint16_t DACClass1::transform_dac_val_to_bit12(uint16_t val8, uint bits)
 	return transform_dac_val(val);       
 }
 
+#define PI        (3.141592653589793238462)
+#define AMPLITUDE (1.0)    // x * 3.3V
+#define PHASE     (PI * 1) // 2*pi is one period
+#define RANGE     (4096/2) // 12 bits DAC
+#define OFFSET    (4096/2) // 12 bits DAC
 
-#else
-void DACClass1::begin(uint32_t period) {
-	// Enable clock for DAC
-	pmc_enable_periph_clk(dacId);
 
-	dacc_reset(dac);
+void DACClass1::calculate_sinewave(uint16_t *pBuffer, unsigned int buf_size)
+{
+  for (int i = 0; i < buf_size; i++) {
+     double rads = (2*PI * i)/buf_size; // Convert degree in radian
+     double val;
 
-	// Set transfer mode to double word
-	dacc_set_transfer_mode(dac, 1);
-
-	// Power save:
-	// sleep mode  - 0 (disabled)
-	// fast wakeup - 0 (disabled)
-	dacc_set_power_save(dac, 0, 0);
-
-	// DAC refresh/startup timings:
-	// refresh        - 0x08 (1024*8 dacc clocks)
-	// max speed mode -    0 (disabled)
-	// startup time   - 0x10 (1024 dacc clocks)
-	dacc_set_timing(dac, 0x08, 0, DACC_MR_STARTUP_1024);
-
-	// Flexible channel selection with tags
-	dacc_enable_flexible_selection(dac);
-
-	// Set up analog current
-	dacc_set_analog_control(dac,
-			DACC_ACR_IBCTLCH0(0x02) |
-			DACC_ACR_IBCTLCH1(0x02) |
-			DACC_ACR_IBCTLDACCORE(0x01));
-
-	// Enable output channels
-	dacc_enable_channel(dac, 0);
-	dacc_enable_channel(dac, 1);
-
-	// Configure Timer Counter to trigger DAC
-	// --------------------------------------
-	pmc_enable_periph_clk(ID_TC1);
-	TC_Configure(TC0, 1,
-		TC_CMR_TCCLKS_TIMER_CLOCK2 |  // Clock at MCR/8
-		TC_CMR_WAVE |                 // Waveform mode
-		TC_CMR_WAVSEL_UP_RC |         // Counter running up and reset when equals to RC
-		TC_CMR_ACPA_SET | TC_CMR_ACPC_CLEAR);
-	const uint32_t TC = period / 8;
-	TC_SetRA(TC0, 1, TC / 2);
-	TC_SetRC(TC0, 1, TC);
-	TC_Start(TC0, 1);
-
-	// Configure clock source for DAC (2 = TC0 Output Chan. 1)
-	dacc_set_trigger(dac, 2);
-
-	// Configure pins
-	PIO_Configure(g_APinDescription[DAC0].pPort,
-			g_APinDescription[DAC0].ulPinType,
-			g_APinDescription[DAC0].ulPin,
-			g_APinDescription[DAC0].ulPinConfiguration);
-	PIO_Configure(g_APinDescription[DAC1].pPort,
-			g_APinDescription[DAC1].ulPinType,
-			g_APinDescription[DAC1].ulPin,
-			g_APinDescription[DAC1].ulPinConfiguration);
-
-	// Enable interrupt controller for DAC
-	dacc_disable_interrupt(dac, 0xFFFFFFFF);
-	NVIC_DisableIRQ(isrId);
-	NVIC_ClearPendingIRQ(isrId);
-	NVIC_SetPriority(isrId, 0);
-	NVIC_EnableIRQ(isrId);
+	 val = ((double)(RANGE) * (cos(rads + PHASE))) + (double)(OFFSET);
+     pBuffer[i] = (uint16_t)val;
+     //rtl_printf("0x%x ", buffer[i]);
+  }
 }
 
-void DACClass::end() {
-	TC_Stop(TC0, 1);
-	NVIC_DisableIRQ(isrId);
-	dacc_disable_channel(dac, 0);
-	dacc_disable_channel(dac, 1);
-}
 
-bool DACClass::canQueue() {
-	return (dac->DACC_TNCR == 0);
-}
+static uint16_t gen_buffer[MAX_DAC_BUFFER_SIZE];
+void DACClass1::gen_sinewave(unsigned int freq, int repeat)
+{
+	int buffer_size;
 
-size_t DACClass::queueBuffer(const uint32_t *buffer, size_t size) {
-	// Try the first PDC buffer
-	if ((dac->DACC_TCR == 0) && (dac->DACC_TNCR == 0)) {
-		dac->DACC_TPR = (uint32_t) buffer;
-		dac->DACC_TCR = size;
-		dac->DACC_PTCR = DACC_PTCR_TXTEN;
-		if (cb)
-			dacc_enable_interrupt(dac, DACC_IER_ENDTX);
-		return size;
+	if (freq <=0 ) {
+		DiagPrintf(" %s : ERROR : frequency=%d \r\n", __FUNCTION__, freq);
+		return;
 	}
 
-	// Try the second PDC buffer
-	if (dac->DACC_TNCR == 0) {
-		dac->DACC_TNPR = (uint32_t) buffer;
-		dac->DACC_TNCR = size;
-		dac->DACC_PTCR = DACC_PTCR_TXTEN;
-		if (cb)
-			dacc_enable_interrupt(dac, DACC_IER_ENDTX);
-		return size;
-	}
+	buffer_size = this->frequency / freq ;  
+	if ( buffer_size > sizeof(gen_buffer) ) buffer_size = sizeof(gen_buffer);
+	if ( buffer_size <= 0 ) buffer_size = this->frequency/1000;
 
-	// PDC buffers full, try again later...
-	return 0;
+	calculate_sinewave(&gen_buffer[0], buffer_size);
+	
+	if ( repeat < 1 ) repeat = 1;
+	send16_repeat(&gen_buffer[0], buffer_size, repeat);
+
 }
 
-void DACClass::setOnTransmitEnd_CB(OnTransmitEnd_CB _cb, void *_data) {
-	cb = _cb;
-	cbData = _data;
-	if (!cb)
-		dacc_disable_interrupt(dac, DACC_IDR_ENDTX);
-}
 
-void DACClass::onService() {
-	uint32_t sr = dac->DACC_ISR;
-	if (sr & DACC_ISR_ENDTX) {
-		// There is a free slot, enqueue data
-		dacc_disable_interrupt(dac, DACC_IDR_ENDTX);
-		if (cb)
-			cb(cbData);
-	}
-}
-
-DACClass DAC(DACC_INTERFACE, DACC_INTERFACE_ID, DACC_ISR_ID);
-
-void DACC_ISR_HANDLER(void) {
-	DAC.onService();
-}
-#endif

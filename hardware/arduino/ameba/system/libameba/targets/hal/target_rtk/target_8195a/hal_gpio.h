@@ -197,7 +197,7 @@ typedef struct _HAL_GPIO_OP_ {
 #endif
 }HAL_GPIO_OP, *PHAL_GPIO_OP;
 
-typedef void (*GPIO_IRQ_FUN)(VOID *Data, u32 Id);
+typedef void (*GPIO_IRQ_FUN)(VOID *Data);
 typedef void (*GPIO_USER_IRQ_FUN)(u32 Id);
 
 typedef struct _HAL_GPIO_ADAPTER_ {

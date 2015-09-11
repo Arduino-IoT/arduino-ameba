@@ -142,6 +142,9 @@ extern void rtw_cancel_timer(uint8_t timer_id);
 
 extern void rtw_del_timer(uint8_t timer_id);
 
+//
+extern void* rtw_assert(uint8_t isCorrect, const char*str);
+
 
 
 #ifdef __cplusplus

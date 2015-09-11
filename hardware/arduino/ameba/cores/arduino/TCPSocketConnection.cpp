@@ -74,7 +74,7 @@ int TCPSocketConnection::send(char* data, int length) {
 }
 
 // -1 if unsuccessful, else number of bytes written
-int TCPSocketConnection::send_all(char* data, int length) {
+int TCPSocketConnection::send_all(const char* data, int length) {
     if ((_sock_fd < 0) || !_is_connected)
         return -1;
     
@@ -112,6 +112,7 @@ int TCPSocketConnection::receive(char* data, int length) {
     }
     
     int n = lwip_recv(_sock_fd, data, length, 0);
+	DiagPrintf("%s : receive %d bytes \r\n", __FUNCTION__, n);
     _is_connected = (n != 0);
     
     return n;

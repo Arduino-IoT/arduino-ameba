@@ -59,26 +59,6 @@ extern uint32_t micros( void ) ;
 extern void delay( uint32_t dwMs ) ;
 extern void delayMicroseconds(uint32_t usec);
 
-//NeoJou
-
-#if 0 // original
-/**
- * \brief Pauses the program for the amount of time (in microseconds) specified as parameter.
- *
- * \param dwUs the number of microseconds to pause (uint32_t)
- */
-static inline void delayMicroseconds(uint32_t) __attribute__((always_inline, unused));
-static inline void delayMicroseconds(uint32_t usec){
-    if (usec == 0) return;
-    uint32_t n = usec * (VARIANT_MCK / 3000000);
-    asm volatile(
-        "L_%=_delayMicroseconds:"       "\n\t"
-        "subs   %0, #1"                 "\n\t"
-        "bne    L_%=_delayMicroseconds" "\n"
-        : "+r" (n) :
-    );
-}
-#endif
 
 #ifdef __cplusplus
 }

@@ -26,8 +26,15 @@
 WiFiClient1::WiFiClient1()  : _sock(MAX_SOCK_NUM){
 }
 
-WiFiClient1::WiFiClient1(uint8_t sock) : _sock(sock) {
+WiFiClient1::WiFiClient1(TCPSocketConnection s)  
+{	
+	_tcpSocket = s;
+	_sock = _tcpSocket.get_socket_fd();
+	WiFiClass1::_state[_sock] = _sock;
+	_readchar_set = false;
 }
+
+
 
 int WiFiClient1::connect(const char* host, uint16_t port) {
 	IPAddress remote_addr;

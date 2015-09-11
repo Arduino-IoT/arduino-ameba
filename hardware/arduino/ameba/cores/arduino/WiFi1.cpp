@@ -23,6 +23,7 @@
 #include "wifi_drv1.h"
 #include "wl_definitions.h"
 
+
 int16_t 	WiFiClass1::_state[MAX_SOCK_NUM] = { NA_STATE, NA_STATE, NA_STATE, NA_STATE };
 
 
@@ -34,6 +35,7 @@ void WiFiClass1::init()
 {
 	wiFiDrv1.wifiDriverInit();
 }
+
 
 
 int WiFiClass1::begin(char* ssid)

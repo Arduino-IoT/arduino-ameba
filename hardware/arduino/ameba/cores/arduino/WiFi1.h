@@ -27,13 +27,15 @@
 #include "IPAddress.h"
 #include "WiFiClient1.h"
 
+
+
 class WiFiClass1
 {
 public:
     static int16_t 	_state[MAX_SOCK_NUM];
-    //static uint16_t _server_port[MAX_SOCK_NUM];
 
     WiFiClass1();
+
 
     void init();
 

@@ -143,11 +143,6 @@ void init_hal_adc(void)
 IMAGE2_DATA_SECTION
 DACClass1 DAC0;
 
-IMAGE2_TEXT_SECTION
-void init_hal_dac(void)
-{
-    DAC0.begin(0);
-}
 
 // WiFi
 IMAGE2_TEXT_SECTION
@@ -175,16 +170,11 @@ void init( void )
 
 	// Initialize C library
 	__libc_init_array();
-
 	
-	//rtl_libc_init();
-
 	init_hal_uart();
 	init_hal_i2c();
-	//init_hal_adc();
-	//init_hal_dac();
+	init_hal_adc();
 	init_hal_wifi();
-	//_ticker_init();
 
 
 	ConfigDebugInfo&= (~(_DBG_GPIO_ | _DBG_UART_));

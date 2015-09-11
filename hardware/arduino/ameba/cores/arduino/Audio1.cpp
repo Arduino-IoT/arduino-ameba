@@ -8,6 +8,7 @@
  * published by the Free Software Foundation.
  */
 
+
 #include "arduino.h"
 
 #include "Audio1.h"
@@ -27,6 +28,7 @@ void AudioClass1::dump_wav_header(WAV_HEADER* pWH)
 	rtl_printf("    -- chunk size   : %d \r\n", pWH->ckSize);
 
 	memcpy(buf, pWH->ckFormat, 4);
+	buf[4]=0;
 	rtl_printf("    -- chunk format : %s \r\n", buf);
 
 }
@@ -61,7 +63,7 @@ void AudioClass1::dump_wav_sub_header(WAV_SUB_HEADER* pWSH)
 }
 
 
-void AudioClass1::read_wav_buf(uint8_t *wav_buf, int wavbuf_size)
+int AudioClass1::read_wav_buf(uint8_t *wav_buf, int wavbuf_size)
 {
 
 	int wavbuf_pos = 0;
@@ -88,19 +90,25 @@ void AudioClass1::read_wav_buf(uint8_t *wav_buf, int wavbuf_size)
 	wav_chunk_size = wav_sub_header.data_size;
 	wav_freq = wav_sub_header.sample_freq / 1000;
 
-	rtl_printf("freq=%d \r\n", wav_freq);	
+	rtl_printf("freq=%d \r\n", wav_freq);
+	return wav_chunk_size;
 }
 
+
+static inline 
+uint16_t map1(uint16_t x, uint16_t in_min, uint16_t in_max, uint16_t out_min, uint16_t out_max)
+{
+  return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
+}
 
 #define MAX_AUDIO_BUF_SIZE 1024
 uint16_t audio_buf[MAX_AUDIO_BUF_SIZE];
 
-static uint16_t transfer_from_wav8(uint8_t value)
+static inline uint16_t transfer_from_wav8(uint8_t data)
 {
 	uint16_t ret;
 
-	ret = value;
-	ret <<= 4;
+	ret = map1(data, 0, 0xFF, 0, 0xFFF);
 	return (ret);
 }
 
@@ -113,7 +121,7 @@ void AudioClass1::play8(uint8_t *data, int size)
 		audio_buf[i] = transfer_from_wav8(data[i]);
 	}
 
-	DAC0.send16_freq(audio_buf, size, 11);
+	DAC0.send16_freq(audio_buf, size, wav_freq);
 }
 
 
@@ -157,5 +165,6 @@ size_t AudioClass1::write(const uint32_t *data, size_t size) {
 	DAC0.send16((uint16_t)data, size, 1);
 }
 #endif
+
 
 

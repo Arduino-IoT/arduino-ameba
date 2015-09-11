@@ -7,6 +7,7 @@
 #include "us_ticker_api.h"
 #include "section_config.h"
 
+
 #include "rt_os_service.h"
 
 static unsigned int __div64_32(u64 *n, unsigned int base)
@@ -101,15 +102,41 @@ void sti(void)
 IMAGE2_TEXT_SECTION
 void rtw_udelay_os(int us)
 {
+
+#if 0
+
+	uint32_t ms;
+	uint32_t us_tick_start; 
+	volatile uint32_t cur_tick;
+	uint32_t delta_time;
+
+	if ( us == 0 ) return;
+
+	if ( us > 1000 ) {	
+		ms = us / 1000;
+		osDelay(ms);
+		us = us % 1000;
+	}
+
+	us_tick_start = us_ticker_read();
+	do {
+		cur_tick = us_ticker_read();
+		delta_time = cur_tick - us_tick_start;
+	} while ( delta_time < us );
+
+
+#else
 	uint32_t i, j;
 	uint32_t us1, us2;
 
 
+	/*
 	if ( us > 1000 ) {	
 		us1 = us / 1000;
 		osDelay(us1);
 		us = us % 1000;
 	}
+	*/
 	
 	// http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.ddi0337h/CHDDIGAC.html
 	//
@@ -120,7 +147,7 @@ void rtw_udelay_os(int us)
     // 1000eba6:	d1fa      	bne.n	1000eb9e <rtw_udelay_os+0xe> // 1 cycle
 	//
 	
-	__disable_irq();
+	cli();
 	for (i=0; i<us; i++) {
 		for (j=0; j<delay_times; j++) {
 			asm volatile (
@@ -128,7 +155,8 @@ void rtw_udelay_os(int us)
 				"nop"); //just waiting 2 cycle
 		}
 	}	
-	__enable_irq();
+	sti();
+#endif
 }
 
 IMAGE2_TEXT_SECTION
@@ -142,9 +170,20 @@ void rt_os_mdelay(int ms)
 //
 
 IMAGE2_TEXT_SECTION
+void* rtw_assert(uint8_t isCorrect, const char*str)
+{
+	if (!isCorrect) {
+		DiagPrintf(" %s : ERROR occur : %s \r\n", __FUNCTION__, str);
+		while(1);
+	}
+}
+
+IMAGE2_TEXT_SECTION
 void* rtw_malloc(size_t size) 
 {
-	return mem_malloc(size);
+	void *ret;
+	ret=mem_malloc(size);
+	rtw_assert((ret!=NULL), "rtw_malloc failed");
 }
 
 IMAGE2_TEXT_SECTION

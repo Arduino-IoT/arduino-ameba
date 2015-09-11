@@ -29,7 +29,6 @@
 #include "DHT1.h"
 
 extern "C" {
-#include "section_config.h"
 #include "rt_os_service.h"
 }
 
@@ -44,7 +43,6 @@ extern "C" {
 // DHTLIB_OK
 // DHTLIB_ERROR_CHECKSUM
 // DHTLIB_ERROR_TIMEOUT
-IMAGE2_TEXT_SECTION
 int DHT1::read(uint8_t pin)
 {
     // READ VALUES
@@ -73,6 +71,8 @@ int DHT1::read(uint8_t pin)
     return DHTLIB_OK;
 }
 
+#define DHTLIB_TIMEOUT (16700*2)
+
 /////////////////////////////////////////////////////
 //
 // PRIVATE
@@ -87,62 +87,65 @@ int DHT1::_readSensor(uint8_t pin, uint8_t wakeupDelay)
     // INIT BUFFERVAR TO RECEIVE DATA
     uint8_t mask = 128;
     uint8_t idx = 0;
+	uint32_t start_time, cur_time;
+	uint16_t loop_cnt;
 
     // EMPTY BUFFER
     for (uint8_t i = 0; i < 5; i++) bits[i] = 0;
 
+	cli();
+	
     // REQUEST SAMPLE
-    cli();
     pinMode(pin, OUTPUT);
     digitalWrite(pin, LOW);
     delayMicroseconds(wakeupDelay*1000);
     digitalWrite(pin, HIGH);
-    delayMicroseconds(40);
+	delayMicroseconds(40);
     pinMode(pin, INPUT);
 
-    // GET ACKNOWLEDGE or TIMEOUT
-    uint16_t loopCnt = DHTLIB_TIMEOUT;
+	// keep low for 80 us
+	loop_cnt = DHTLIB_TIMEOUT;
     while(digitalRead(pin) == LOW)
     {
-        if (--loopCnt == 0) {
+		if (--loop_cnt == 0) {
 			sti();
-			return DHTLIB_ERROR_TIMEOUT;
-        }
+			return -2;
+		}
     }
 
-    loopCnt = DHTLIB_TIMEOUT;
+	// keep high for 80 us
+	loop_cnt = DHTLIB_TIMEOUT;
     while(digitalRead(pin) == HIGH)
     {
-        if (--loopCnt == 0) {
+		if (--loop_cnt == 0) {
 			sti();
-			return DHTLIB_ERROR_TIMEOUT;
-        }
+			return -3;
+		}
     }
 
     // READ THE OUTPUT - 40 BITS => 5 BYTES
     for (uint8_t i = 40; i != 0; i--)
     {
-        loopCnt = DHTLIB_TIMEOUT;
+		loop_cnt = DHTLIB_TIMEOUT;
         while(digitalRead(pin) == LOW)
         {
-            if (--loopCnt == 0) {
+			if (--loop_cnt == 0) {
 				sti();
-				return DHTLIB_ERROR_TIMEOUT;
-            }
+				return -4;
+			}
         }
 
-        uint32_t t = micros();
-
-        loopCnt = DHTLIB_TIMEOUT;
+		start_time = micros();		
+		loop_cnt = DHTLIB_TIMEOUT;
         while(digitalRead(pin) == HIGH)
         {
-            if (--loopCnt == 0) {
+			if (--loop_cnt == 0) {
 				sti();
-				return DHTLIB_ERROR_TIMEOUT;
-            }
+				return -5;
+			}
         }
 
-        if ((micros() - t) > 40)
+        if ((micros() - start_time) > 40)
         { 
             bits[idx] |= mask;
         }
@@ -157,7 +160,6 @@ int DHT1::_readSensor(uint8_t pin, uint8_t wakeupDelay)
     digitalWrite(pin, HIGH);
 
 	sti();
-	
     return DHTLIB_OK;
 }
 //

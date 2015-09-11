@@ -16,17 +16,18 @@
   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#ifndef _WIRING_TONE_
-#define _WIRING_TONE_
+#ifndef _TONE1_H_
+#define _TONE1_H_
 
 
 #include "arduino.h"
+#include "DAC1.h"
 
 class Tone1 
 {
     public:
 		
-		Tone1(){ volume = 50; };
+		Tone1(){ volume = 50; DAC0.begin(DAC_DATA_RATE_250K); };
 		void set_volume(uint8_t v) { volume = v; }
 		void tone(unsigned int frequency, unsigned long duration);
 		void noTone(unsigned long duration);
@@ -35,7 +36,7 @@ class Tone1
 		// 0 ~ 100
         uint8_t volume;
 		void calculate_sinewave(uint16_t *pBuffer, unsigned int buf_size);
-		void calculate_zero(uint16_t *pBuffer);
+		void calculate_zero(uint16_t *pBuffer, int s);
 };
 
 

@@ -11,6 +11,8 @@
 #ifndef AUDIO1_H
 #define AUDIO1_H
 
+
+
 #include "Arduino.h"
 //#include "Print.h"
 #include "dac1.h"
@@ -45,8 +47,8 @@ typedef struct {
 class AudioClass1 {
 
 public:	
-	AudioClass1() {};
-	void read_wav_buf(uint8_t *wav_buf, int wavbuf_size);
+	AudioClass1() { DAC0.begin(DAC_DATA_RATE_10K); };
+	int read_wav_buf(uint8_t *wav_buf, int wavbuf_size);
 	//uint16_t* get_wav_chunk_buf();
 	int get_wav_chunk_size() { return wav_chunk_size; }
 	void play8(uint8_t *data, int size);
@@ -63,4 +65,5 @@ protected:
 };
 
 
-#endif
+#endif 
+

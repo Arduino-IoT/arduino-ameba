@@ -19,13 +19,10 @@
 #define DAC_INTR_OP_TYPE    1
 #define DAC_DMA_OP_TYPE     1
 
-// DAC SAL management macros
-#define SAL_DAC_USER_CB_NUM     (sizeof(SAL_DAC_USER_CB) / sizeof(PSAL_DAC_USERCB_ADPT))
-
 // DAC SAL used module. 
 // Please set the DAC module flag to 1 to enable the related DAC module functions.
 #define DAC0_USED                   1
-#define DAC1_USED                   1
+#define DAC1_USED                   0
 
 
 //================ Debug MSG Definition =======================
@@ -180,24 +177,13 @@ typedef struct _HAL_DAC_OP_ {
     u32         (*HalDACReadReg)    (VOID *Data, u8 DACReg);//HAL DAC read register
 }HAL_DAC_OP, *PHAL_DAC_OP;
 
-// DAC user callback adapter
-typedef struct _SAL_DAC_USERCB_ADPT_ {
-    VOID (*USERCB)      (VOID *Data);
-    u32  USERData;
-}SAL_DAC_USERCB_ADPT, *PSAL_DAC_USERCB_ADPT;
-
+/
 // DAC user callback structure
 typedef struct _SAL_DAC_USER_CB_ {
-    PSAL_DAC_USERCB_ADPT    pTXCB;          //DAC Transmit Callback
-    PSAL_DAC_USERCB_ADPT    pTXCCB;         //DAC Transmit Complete Callback
-    PSAL_DAC_USERCB_ADPT    pRXCB;          //DAC Receive Callback
-    PSAL_DAC_USERCB_ADPT    pRXCCB;         //DAC Receive Complete Callback
-    PSAL_DAC_USERCB_ADPT    pRDREQCB;       //DAC Read Request Callback
-    PSAL_DAC_USERCB_ADPT    pERRCB;         //DAC Error Callback
-    PSAL_DAC_USERCB_ADPT    pDMATXCB;       //DAC DMA Transmit Callback
-    PSAL_DAC_USERCB_ADPT    pDMATXCCB;      //DAC DMA Transmit Complete Callback
-    PSAL_DAC_USERCB_ADPT    pDMARXCB;       //DAC DMA Receive Callback
-    PSAL_DAC_USERCB_ADPT    pDMARXCCB;      //DAC DMA Receive Complete Callback
+	struct _SAL_DAC_USER_CB_ *next;
+	uint32_t* 	pBuf;
+	int			dataLen;
+	int			repeat;
 }SAL_DAC_USER_CB, *PSAL_DAC_USER_CB;
 
 // DAC Transmit Buffer
@@ -222,7 +208,7 @@ typedef struct _SAL_DAC_HND_ {
                                                                             
     PHAL_DAC_INIT_DAT       pInitDat;           //Pointer to I2C initial data struct
     PSAL_DAC_TRANSFER_BUF   pTXBuf;             //Pointer to I2C TX buffer
-    PSAL_DAC_USER_CB        pUserCB;            //Pointer to I2C User Callback
+    
 }SAL_DAC_HND, *PSAL_DAC_HND;
 
 // DAC SAL handle private 
@@ -243,9 +229,10 @@ typedef struct _SAL_DAC_MNGT_ADPT_ {
     PIRQ_HANDLE             pIrqGdmaHnd;
     
     PSAL_DAC_USER_CB        pUserCB;            //Pointer to SAL user callbacks (SAL_DAC_USER_CB )
+    PSAL_DAC_USER_CB        pUserCB_head;            //Pointer to SAL user callbacks (SAL_DAC_USER_CB )
+    PSAL_DAC_USER_CB        pUserCB_tail;            //Pointer to I2C User Callback
+	uint8_t					isSent;
 
-//NeoJou
-//    osThreadId				thread_id;  
 }SAL_DAC_MNGT_ADPT, *PSAL_DAC_MNGT_ADPT;
 
 
