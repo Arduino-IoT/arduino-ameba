@@ -43,6 +43,18 @@ extern "C" {
 #include "cmsis_os.h"
 #include "rtl_lib.h"
 
+
+//#define __SYSTEM_CLOCK    (200000000UL/6*5)
+extern uint32_t SystemCoreClock;
+
+
+#define clockCyclesPerMicrosecond() ( SystemCoreClock / 1000000L )
+#define clockCyclesToMicroseconds(a) ( ((a) * 1000L) / (SystemCoreClock / 1000L) )
+#define microsecondsToClockCycles(a) ( (a) * (SystemCoreClock / 1000000L) )
+
+
+
+
 void yield(void);
 
 //NeoJou
@@ -97,7 +109,7 @@ extern PinDescription g_APinDescription[] ;
 #include "Tone1.h"
 #include "WMath.h"
 //#include "HardwareSerial.h"
-//#include "wiring_pulse.h"
+#include "wiring_pulse.h"
 
 #endif // __cplusplus
 

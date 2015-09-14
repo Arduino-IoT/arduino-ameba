@@ -47,7 +47,7 @@ done
 RDIR="$( dirname "$SOURCE" )"
 DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
 
-cd $DIR
+cd "$DIR"
 
 cp -f ../../../build/target.axf .
 #cp -f ../../../build/ram_1.bin .
