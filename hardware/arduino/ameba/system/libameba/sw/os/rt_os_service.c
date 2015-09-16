@@ -426,7 +426,34 @@ u64 rtw_modular64(u64 n, u64 base)
 }
 
 // timer
+#define SYS_TIM_ID      1   // the G-Timer ID for System
+#define OS_TIM_ID       2   // the G-Timer ID for Application
+#define MBED_TIM_ID      3   // the G-Timer ID for Application
 
+static int os_ticker_inited = 0;
+
+static TIMER_ADAPTER OSTimerAdapter;
+
+static ticker_event_queue_t os_ticker_events;
+
+void os_ticker_init(void);
+void os_ticker_disable_interrupt(void);
+void os_ticker_clear_interrupt(void);
+void os_ticker_set_interrupt(timestamp_t timestamp);
+
+
+static const ticker_interface_t os_ticker_us_interface = {
+    .init = os_ticker_init,
+    .read = us_ticker_read,
+    .disable_interrupt = os_ticker_disable_interrupt,
+    .clear_interrupt = os_ticker_clear_interrupt,
+    .set_interrupt = os_ticker_set_interrupt,
+};
+
+static const ticker_data_t os_ticker_data = {
+    .interface = &os_ticker_us_interface,
+    .queue = &os_ticker_events,
+};
 
 IMAGE2_DATA_SECTION
 static TIMER_FUN timer_func[MAX_TIMER_ID]={NULL};
@@ -436,6 +463,8 @@ static void* timer_func_cntx[MAX_TIMER_ID]={NULL};
 
 IMAGE2_DATA_SECTION
 static ticker_event_t timer_func_event[MAX_TIMER_ID];
+
+extern HAL_TIMER_OP HalTimerOp;
 
 static void rtw_timer_irq(uint32_t id) 
 {
@@ -450,9 +479,76 @@ static void rtw_timer_irq(uint32_t id)
 }
 
 IMAGE2_TEXT_SECTION
+VOID os_ticker_irq_handler(IN  VOID *Data)
+{
+    ticker_irq_handler(&os_ticker_data);
+}
+
+
+IMAGE2_TEXT_SECTION
+void os_ticker_init(void) 
+{
+    if (os_ticker_inited) return;
+    os_ticker_inited = 1;
+
+    // Initial a G-Timer
+    OSTimerAdapter.IrqDis = 1;    // Disable Irq
+    OSTimerAdapter.IrqHandle.IrqFun = (IRQ_FUN) os_ticker_irq_handler;
+    OSTimerAdapter.IrqHandle.IrqNum = TIMER2_7_IRQ;
+    OSTimerAdapter.IrqHandle.Priority = 0x20;
+    OSTimerAdapter.IrqHandle.Data = (u32)NULL;
+    OSTimerAdapter.TimerId = OS_TIM_ID;
+    OSTimerAdapter.TimerIrqPriority = 0;
+    OSTimerAdapter.TimerLoadValueUs = 1;
+    OSTimerAdapter.TimerMode = FREE_RUN_MODE; // Countdown Free Run
+
+    HalTimerOp.HalTimerInit((VOID*) &OSTimerAdapter);
+
+}
+
+IMAGE2_TEXT_SECTION
+void os_ticker_disable_interrupt(void) 
+{
+    HalTimerOp.HalTimerDis((u32)OSTimerAdapter.TimerId);
+}
+
+IMAGE2_TEXT_SECTION
+void os_ticker_clear_interrupt(void) 
+{
+    HalTimerOp.HalTimerIrqClear((u32)OSTimerAdapter.TimerId);
+}
+
+IMAGE2_TEXT_SECTION
+void os_ticker_set_interrupt(timestamp_t timestamp) 
+{
+    uint32_t cur_time_us;
+    uint32_t time_def;
+
+    cur_time_us = us_ticker_read();
+    if ((uint32_t)timestamp >= cur_time_us) {
+        time_def = (uint32_t)timestamp - cur_time_us;
+    }
+    else {
+        time_def = 0xffffffff - cur_time_us + (uint32_t)timestamp;
+    }    
+
+    if (time_def < TIMER_TICK_US) {
+        time_def = TIMER_TICK_US;       // at least 1 tick
+    }
+
+    OSTimerAdapter.IrqDis = 0;    // Enable Irq
+    OSTimerAdapter.TimerLoadValueUs = time_def;
+    OSTimerAdapter.TimerMode = USER_DEFINED; // Countdown Free Run
+    
+	InterruptUnRegister(&OSTimerAdapter.IrqHandle);
+    HalTimerOp.HalTimerInit((VOID*) &OSTimerAdapter);
+}
+
+
+
+IMAGE2_TEXT_SECTION
 void rtw_init_timer(uint8_t *ptimer_id, TIMER_FUN pfunc,void* cntx, char* name)
 {
-	const ticker_data_t *_ticker_data;
 	int i;
 
 
@@ -470,8 +566,7 @@ void rtw_init_timer(uint8_t *ptimer_id, TIMER_FUN pfunc,void* cntx, char* name)
 	timer_func[i] = pfunc;
 	timer_func_cntx[i] = cntx;
 	
-	_ticker_data= get_us_ticker_data();
-	ticker_set_handler(_ticker_data, &rtw_timer_irq);
+	ticker_set_handler(&os_ticker_data, &rtw_timer_irq);
 	
 	DiagPrintf(" %d \r\n", i);
 }
@@ -480,25 +575,20 @@ void rtw_init_timer(uint8_t *ptimer_id, TIMER_FUN pfunc,void* cntx, char* name)
 IMAGE2_TEXT_SECTION
 void rtw_set_timer(uint8_t timer_id, u32 delay_time)
 {
-	const ticker_data_t *_ticker_data;
-
 	if ( timer_id <0 || timer_id>=MAX_TIMER_ID ) return;
 	
 	if (timer_func[timer_id] == NULL ) return;
-	_ticker_data= get_us_ticker_data();
-	ticker_insert_event(_ticker_data, &timer_func_event[timer_id], delay_time*1000+ticker_read(_ticker_data), timer_id);
+
+	ticker_insert_event(&os_ticker_data, &timer_func_event[timer_id], delay_time*1000+ticker_read(&os_ticker_data), timer_id);
 }
 
 IMAGE2_TEXT_SECTION
 void rtw_cancel_timer(uint8_t timer_id)
 {
-	const ticker_data_t *_ticker_data;
-
 	if ( timer_id <0 || timer_id>=MAX_TIMER_ID ) return;
 	
 	if (timer_func[timer_id] == NULL ) return;
-	_ticker_data= get_us_ticker_data();
-	ticker_remove_event(_ticker_data, &timer_func_event[timer_id]);
+	ticker_remove_event(&os_ticker_data, &timer_func_event[timer_id]);
 }
 
 IMAGE2_TEXT_SECTION

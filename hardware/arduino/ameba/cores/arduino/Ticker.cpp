@@ -32,6 +32,7 @@ void Ticker::setup(timestamp_t t) {
 }
 
 void Ticker::handler() {
+	DiagPrintf("Ticker handler\r\n");
     insert(event.timestamp + _delay);
     _function.call();
 }

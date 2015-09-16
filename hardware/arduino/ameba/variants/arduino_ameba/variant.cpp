@@ -175,6 +175,7 @@ void init( void )
 	init_hal_i2c();
 	init_hal_adc();
 	init_hal_wifi();
+	us_ticker_init();
 
 
 	ConfigDebugInfo&= (~(_DBG_GPIO_ | _DBG_UART_));
