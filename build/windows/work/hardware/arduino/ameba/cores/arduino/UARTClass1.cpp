@@ -28,6 +28,7 @@ extern "C"{
 
 #include "hal_irqn.h"
 #include "hal_diag.h"
+#include "hal_platform.h"
 
 } // extern C
 
@@ -80,10 +81,18 @@ void UARTClass1::IrqHandler(SerialIrq event)
 
 void UARTClass1::begin( const uint32_t dwBaudRate )
 {
+	uint32_t regValue;
+	
 	serial_init(&(this->sobj),UART1_TX,UART1_RX);
 
 	serial_baud(&(this->sobj),dwBaudRate);
 	serial_format(&(this->sobj), 8, ParityNone, 1);
+
+    regValue = HAL_READ32(SYSTEM_CTRL_BASE, 0x330);
+	DiagPrintf("0x40000330 = 0x%x , write to 0\r\n", regValue);
+	HAL_WRITE32(SYSTEM_CTRL_BASE, 0x330, 0);
+    regValue = HAL_READ32(SYSTEM_CTRL_BASE, 0x330);
+	DiagPrintf("After write: 0x40000330 = 0x%x\r\n", regValue);
 	
     serial_irq_handler(&(this->sobj), uart_irq, (uint32_t)&(this->sobj));
     serial_irq_set(&(this->sobj), RxIrq, 1);

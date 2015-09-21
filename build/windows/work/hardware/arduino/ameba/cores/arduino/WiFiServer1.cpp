@@ -30,6 +30,7 @@ WiFiServer1::WiFiServer1(uint16_t port)
 
 void WiFiServer1::begin()
 {
+	DiagPrintf("WiFiServer1 begin(), port = %d \r\n", _port);
 	this->_server.bind(_port);
 	this->_server.listen();
 	
@@ -38,8 +39,8 @@ void WiFiServer1::begin()
 WiFiClient1 WiFiServer1::available(byte* status)
 {
 	this->_server.accept(this->tcpSock);
-	this->_pclient = new WiFiClient1(this->tcpSock);
-    return *(this->_pclient);
+	//this->tcpSock.set_blocking(false, 15000);
+    return WiFiClient1(&(this->tcpSock));
 }
 
 

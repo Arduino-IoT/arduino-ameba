@@ -24,12 +24,13 @@
 
 
 WiFiClient1::WiFiClient1()  : _sock(MAX_SOCK_NUM){
+	_pTcpSocket = new TCPSocketConnection();
 }
 
-WiFiClient1::WiFiClient1(TCPSocketConnection s)  
+WiFiClient1::WiFiClient1(TCPSocketConnection* s)  
 {	
-	_tcpSocket = s;
-	_sock = _tcpSocket.get_socket_fd();
+	_pTcpSocket = s;
+	_sock = _pTcpSocket->get_socket_fd();
 	WiFiClass1::_state[_sock] = _sock;
 	_readchar_set = false;
 }
@@ -52,7 +53,7 @@ int WiFiClient1::connect(IPAddress ip, uint16_t port)
     _sock = getFirstSocket();
     if (_sock != SOCK_NOT_AVAIL)
     {
-		ret = _tcpSocket.connect(ip.get_address(), port);
+		ret = _pTcpSocket->connect(ip.get_address(), port);
 		if ( ret != 0 ) {
 			Serial.print("WiFiClient1 : connect failed ret=");
 			Serial.println(ret);
@@ -66,7 +67,7 @@ int WiFiClient1::connect(IPAddress ip, uint16_t port)
     		return 0;
     	}
 
-		_sock = _tcpSocket.get_socket_fd();
+		_sock = _pTcpSocket->get_socket_fd();
 		WiFiClass1::_state[_sock] = _sock;
 		_readchar_set = false;
 	
@@ -84,9 +85,9 @@ int WiFiClient1::available() {
 	int ret;
 
 	if (_sock == 255) return 0;
-	if (_tcpSocket.is_connected() == false ) return 0;
+	if (_pTcpSocket->is_connected() == false ) return 0;
 
-	ret = _tcpSocket.receive(&_readchar,1);
+	ret = _pTcpSocket->receive(&_readchar,1);
 	_readchar_set = true;
 
 	return ret;
@@ -98,7 +99,7 @@ size_t WiFiClient1::write(uint8_t b) {
 
 size_t WiFiClient1::write(const uint8_t *buf, size_t size) {
 
-  return _tcpSocket.send((char*)buf, (int)size);
+  return _pTcpSocket->send((char*)buf, (int)size);
 }
 
 
@@ -133,7 +134,7 @@ int WiFiClient1::read(uint8_t* buf, size_t size) {
 	if ( _size ==0 ) return n;
   }
 
-  ret = _tcpSocket.receive((char*)buf, (int)_size);
+  ret = _pTcpSocket->receive((char*)buf, (int)_size);
   if ( ret < 0 ) return ret;
   return (n+ret);
 }
@@ -158,7 +159,7 @@ void WiFiClient1::stop() {
   if (_sock == 255)
     return;
 
-  _tcpSocket.close();
+  _pTcpSocket->close();
   WiFiClass1::_state[_sock] = NA_STATE;
 
   _sock = 255;
@@ -169,13 +170,13 @@ uint8_t WiFiClient1::connected() {
   if (_sock == 255) {
     return 0;
   } else {
-  	return ( _tcpSocket.is_connected() == true )? 1 : 0;
+  	return ( _pTcpSocket->is_connected() == true )? 1 : 0;
   }
 }
 
 WiFiClient1::operator bool() {
   if ( _sock == 255 ) return false;
-  return _tcpSocket.is_connected();
+  return _pTcpSocket->is_connected();
 }
 
 // Private Methods
@@ -190,4 +191,9 @@ uint8_t WiFiClient1::getFirstSocket()
     return SOCK_NOT_AVAIL;
 }
 
+
+char* WiFiClient1::get_address(void)
+{
+	return _pTcpSocket->get_address();
+}
 

@@ -32,7 +32,6 @@ private:
   //NeoJou
   TCPSocketServer _server;
   TCPSocketConnection tcpSock;
-  WiFiClient1	  *_pclient;
 public:
   WiFiServer1(uint16_t);
   WiFiClient1 available(uint8_t* status = NULL);

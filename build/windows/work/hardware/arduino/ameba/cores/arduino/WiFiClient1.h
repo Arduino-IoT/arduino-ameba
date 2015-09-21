@@ -12,7 +12,7 @@ class WiFiClient1 : public Client {
 public:
 	
   WiFiClient1();
-  WiFiClient1(TCPSocketConnection s);
+  WiFiClient1(TCPSocketConnection* s);
 
   uint8_t status();
   virtual int connect(IPAddress ip, uint16_t port);
@@ -28,12 +28,14 @@ public:
   virtual uint8_t connected();
   virtual operator bool();
 
+  char* get_address(void);
+
   friend class WiFiServer1;
 
   using Print::write;
 
 private:
-	TCPSocketConnection _tcpSocket;
+	TCPSocketConnection* _pTcpSocket;
 	char _readchar;
 	bool _readchar_set;
 	uint8_t _sock;	 

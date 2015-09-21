@@ -112,7 +112,6 @@ int TCPSocketConnection::receive(char* data, int length) {
     }
     
     int n = lwip_recv(_sock_fd, data, length, 0);
-	DiagPrintf("%s : receive %d bytes \r\n", __FUNCTION__, n);
     _is_connected = (n != 0);
     
     return n;
