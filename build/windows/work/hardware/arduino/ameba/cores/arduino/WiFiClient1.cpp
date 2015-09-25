@@ -88,9 +88,12 @@ int WiFiClient1::available() {
 	if (_pTcpSocket->is_connected() == false ) return 0;
 
 	ret = _pTcpSocket->receive(&_readchar,1);
-	_readchar_set = true;
-
-	return ret;
+	if ( ret == 1 ) {
+		_readchar_set = true;
+		return 1;
+	} else {
+		return 0;
+	}
 }
 
 size_t WiFiClient1::write(uint8_t b) {
@@ -99,7 +102,7 @@ size_t WiFiClient1::write(uint8_t b) {
 
 size_t WiFiClient1::write(const uint8_t *buf, size_t size) {
 
-  return _pTcpSocket->send((char*)buf, (int)size);
+  return _pTcpSocket->send_all((char*)buf, (int)size);
 }
 
 
