@@ -67,7 +67,7 @@ void pinMode( uint32_t ulPin, uint32_t ulMode )
 
 
 	//DiagPrintf("[pinMode] ulPin=%d, ulMode=%d\r\n", ulPin, ulMode);
-	if ( ulPin < 0 || ulPin > 13 ) return;
+	if ( ulPin < 0 || ulPin > 18 ) return;
 
 	pGpio_pin_t = &gpio_pin_struct[ulPin];
 	pGpio_t = &gpio_pin_struct[ulPin].sGpio_t;
@@ -134,7 +134,7 @@ void digitalWrite( uint32_t ulPin, uint32_t ulVal )
 	gpio_t *pGpio_t;
     u32 RegValue;
 
-	if ( ulPin < 0 || ulPin > 13 ) return;
+	if ( ulPin < 0 || ulPin > 18 ) return;
 
 	/* Handle */
 	if ( g_APinDescription[ulPin].ulPinType != PIO_GPIO )
@@ -174,7 +174,7 @@ int digitalRead( uint32_t ulPin )
 	gpio_t *pGpio_t;	
     u32 RegValue;
 	
-	if ( ulPin < 0 || ulPin > 13 ) return;
+	if ( ulPin < 0 || ulPin > 18 ) return;
 
 	/* Handle */
 	if ( g_APinDescription[ulPin].ulPinType != PIO_GPIO )
@@ -223,7 +223,7 @@ void digital_isr( uint32_t ulPin, void* handler, void* data)
     u32 RegValue;
 	HAL_GPIO_PIN *pHal_gpio_pin;
 
-	if ( ulPin < 0 || ulPin > 13 ) return;
+	if ( ulPin < 0 || ulPin > 18 ) return;
 
 	/* Handle */
 	if ( g_APinDescription[ulPin].ulPinType != PIO_GPIO )
@@ -256,7 +256,7 @@ u8 gpio_get_pin_num(uint32_t ulPin)
 
 	u8 pin_num;
 
-	if ( ulPin < 0 || ulPin > 13 ) return;
+	if ( ulPin < 0 || ulPin > 18 ) return;
 
 	/* Handle */
 	if ( g_APinDescription[ulPin].ulPinType != PIO_GPIO )
