@@ -34,7 +34,6 @@ analogin_t   adc3;
 
 } // extern C
 
-#include "wire.h"
 #include "WiFi1.h"
 
 
@@ -77,8 +76,6 @@ PinDescription g_APinDescription[]=
 void UART_Handler(void);
 
 
-//i2c
-i2c_t i2cmaster_wire1;
 
 
 } // extern C
@@ -122,16 +119,7 @@ void init_hal_uart(void)
 	ReRegisterSerial();
 }
 
-//I2C
-IMAGE2_DATA_SECTION 
-TwoWire Wire1;
 
-IMAGE2_TEXT_SECTION 
-void init_hal_i2c(void)
-{
-	Wire1.setpin(PD_7, PD_6);
-	Wire1.setI2CMaster(&i2cmaster_wire1);
-}
 
 // adc
 IMAGE2_TEXT_SECTION 
@@ -177,7 +165,6 @@ void init( void )
 	__libc_init_array();
 	
 	init_hal_uart();
-	init_hal_i2c();
 	init_hal_adc();
 	init_hal_wifi();
 	us_ticker_init();

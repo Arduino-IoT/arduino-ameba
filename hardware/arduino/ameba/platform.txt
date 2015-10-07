@@ -106,5 +106,5 @@ tools.mbed.path={runtime.ide.path}/hardware/tools
 
 tools.mbed.upload.params.verbose=
 tools.mbed.upload.params.quiet=
-tools.mbed.upload.pattern= "{path}/{cmd}" "{path}/makebin/makebin.sh" {upload.verbose} 
+tools.mbed.upload.pattern= "c:\cygwin\bin\{cmd}" "{path}/makebin/makebin.sh" {upload.verbose} 
 
