@@ -104,7 +104,7 @@ extern void rtw_memset(void *pbuf, int c, u32 sz);
 //
 extern void rtw_spinlock_init(_lock *plock);
 
-extern int rtw_create_thread(osThreadDef_t* pthread_def, void (*task)(), void *argument,
+extern int rtw_create_thread(osThreadDef_t* pthread_def, os_pthread task, void *argument,
         osPriority priority, uint32_t stack_size);
 
 extern void rtw_init_sema(_sema *sema, int count);

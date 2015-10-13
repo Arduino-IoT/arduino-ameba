@@ -22,7 +22,7 @@ void ticker_set_handler(const ticker_data_t *const data, ticker_event_handler ha
 
     data->queue->event_handler = handler;
 	
-	DiagPrintf(" %s event_handler : 0x%x\r\n", __FUNCTION__, data->queue->event_handler);
+	//DiagPrintf(" %s event_handler : 0x%x\r\n", __FUNCTION__, data->queue->event_handler);
 }
 
 void ticker_irq_handler(const ticker_data_t *const data) {

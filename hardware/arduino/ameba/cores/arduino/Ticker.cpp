@@ -19,6 +19,28 @@
 #include "FunctionPointer.h"
 #include "ticker_api.h"
 
+#include "rt_os_service.h"
+
+void ticker_thread(void *arg)
+{
+    Ticker *pTicker = (Ticker*)arg;
+	while (1) {
+		rtw_down_sema(&(pTicker->ticker_thread_sema));
+		pTicker->_function.call();
+	}
+}
+
+void Ticker::ticker_init(void)
+{
+    rtw_init_sema(&this->ticker_thread_sema, 0);
+
+	tasklet.pthread = (os_pthread)(&ticker_thread);
+    tasklet.tpriority = osPriorityRealtime;
+    tasklet.stacksize = DEFAULT_STACK_SIZE;
+    tasklet.stack_pointer = &this->stack[0];
+
+	_tid = osThreadCreate(&this->tasklet, this);
+}
 
 void Ticker::detach() {
     remove();
@@ -32,8 +54,9 @@ void Ticker::setup(timestamp_t t) {
 }
 
 void Ticker::handler() {
-    insert(event.timestamp + _delay);
-    _function.call();
+    insert(event.timestamp + _delay);	
+	rtw_up_sema(&this->ticker_thread_sema);
+    //_function.call();
 }
 
 

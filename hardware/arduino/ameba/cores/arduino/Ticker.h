@@ -18,6 +18,8 @@
 
 #include "TimerEvent.h"
 #include "FunctionPointer.h"
+#include "cmsis_os.h"
+#include "rt_os_service.h"
 
 
 /** A Ticker is used to call a function at a recurring interval
@@ -54,12 +56,16 @@
  * @endcode
  */
 class Ticker : public TimerEvent {
+private: 
+	void ticker_init(void);
 
 public:
     Ticker() : TimerEvent() {
+		ticker_init();
     }
 
     Ticker(const ticker_data_t *data) : TimerEvent(data) {
+		ticker_init();
     }
 
     /** Attach a function to be called by the Ticker, specifiying the interval in seconds
@@ -116,9 +122,18 @@ protected:
     void setup(timestamp_t t);
     virtual void handler();
 
+public:
+	_sema	ticker_thread_sema;
+    FunctionPointer _function;  /**< Callback. */
+	
 protected:
     timestamp_t     _delay;     /**< Time delay (in microseconds) for re-setting the multi-shot callback. */
-    FunctionPointer _function;  /**< Callback. */
+	osThreadDef_t tasklet;
+	uint8_t stack[DEFAULT_STACK_SIZE];
+	 osThreadId _tid;
+
+friend void ticker_thread(void *arg);
+
 };
 
 
