@@ -23,7 +23,7 @@ extern "C" {
 #endif
 
 #include "cmsis_os.h"
-#include "rt_time.h"
+#include "rt_Time.h"
 
 #include "us_ticker_api.h"
 #include "section_config.h"

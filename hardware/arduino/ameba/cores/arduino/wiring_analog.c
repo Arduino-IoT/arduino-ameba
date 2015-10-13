@@ -27,7 +27,7 @@ extern "C" {
 //
 #include "basic_types.h"
 
-#include "Pinmap.h"
+#include "pinmap.h"
 #include "hal_pinmux.h"
 
 static const PinMap PinMap_PWM[] = {

@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 #include "Timer.h"
-#include "ticker_api.h"
 #include "us_ticker_api.h"
 
 

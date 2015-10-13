@@ -9,11 +9,11 @@
  */
 
 
-#include "arduino.h"
+#include "Arduino.h"
 
 #include "Audio1.h"
 
-#include "dac1.h"
+#include "DAC1.h"
 
 
 

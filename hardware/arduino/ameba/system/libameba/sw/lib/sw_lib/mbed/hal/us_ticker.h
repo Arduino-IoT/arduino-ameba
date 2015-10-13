@@ -13,12 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef MBED_US_TICKER_API_H
-#define MBED_US_TICKER_API_H
+#ifndef MBED_US_TICKER_H
+#define MBED_US_TICKER_H
 
 #include <stdint.h>
-#include "us_ticker.h"
-#include "ticker_api.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -30,13 +28,42 @@ extern "C" {
  * @{
  */
 
-/** Get ticker's data
+
+/** The wrapper for ticker_irq_handler, to pass us ticker's data
  *
- * @return The low power ticker data
  */
-const ticker_data_t* get_us_ticker_data(void);
+extern void us_ticker_irq_handler(void);
 
+/* HAL us ticker */
 
+/** Initialize the ticker
+ *
+ */
+extern void us_ticker_init(void);
+
+/** Read the current counter
+ *
+ * @return The current timer's counter value in microseconds
+ */
+extern uint32_t us_ticker_read(void);
+
+/** Set interrupt for specified timestamp
+ *
+ * @param timestamp The time in microseconds to be set
+ */
+extern void us_ticker_set_interrupt(uint32_t timestamp);
+
+/** Disable us ticker interrupt
+ *
+ */
+extern void us_ticker_disable_interrupt(void);
+
+/** Clear us ticker interrupt
+ *
+ */
+extern void us_ticker_clear_interrupt(void);
+
+/**@}*/
 
 #ifdef __cplusplus
 }

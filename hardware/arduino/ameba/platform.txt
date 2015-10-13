@@ -5,7 +5,7 @@
 # https://github.com/arduino/Arduino/wiki/Arduino-IDE-1.5---3rd-party-Hardware-specification
 
 name=Arduino ARM (32-bits) Boards
-version=1.5.8
+version=1.6.1
 
 # Ameba compile variables
 # ----------------------
@@ -50,7 +50,7 @@ compiler.ameba.c.include4 = "-I{compiler.ameba.libpath}/sw/os" "-I{compiler.ameb
 
 compiler.ameba.c.flags = {compiler.ameba.c.include1} {compiler.ameba.c.include2} {compiler.ameba.c.include3} {compiler.ameba.c.include4}
 
-sys_obj_files = "{build.variant.path}\startup.o"
+sys_obj_files = "{build.variant.path}/startup.o"
 
 # USB Flags
 # ---------
@@ -106,5 +106,5 @@ tools.mbed.path={runtime.ide.path}/hardware/tools
 
 tools.mbed.upload.params.verbose=
 tools.mbed.upload.params.quiet=
-tools.mbed.upload.pattern= "c:\cygwin\bin\{cmd}" "{path}/makebin/makebin.sh" {upload.verbose} 
+tools.mbed.upload.pattern= "{cmd}" "{path}/makebin/makebin.sh" {upload.verbose} 
 

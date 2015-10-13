@@ -20,7 +20,7 @@
 #define _TONE1_H_
 
 
-#include "arduino.h"
+#include "Arduino.h"
 #include "DAC1.h"
 
 class Tone1 

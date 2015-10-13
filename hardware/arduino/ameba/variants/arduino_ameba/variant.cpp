@@ -15,7 +15,7 @@
   License along with this library; if not, write to the Free Software
   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
-#include "arduino.h"
+#include "Arduino.h"
 #include "variant.h"
 #include <stdarg.h>
 
@@ -25,7 +25,7 @@ extern "C" {
 #include "hal_irqn.h"
 #include "hal_diag.h"
 #include "analogin_api.h"
-#include "us_ticker_api.h"
+#include "us_ticker.h"
 #include "rt_os_service.h"
 
 analogin_t   adc1;

@@ -120,8 +120,8 @@ sample code bearing this copyright.
  extern "C" {
 #endif
 
-#include "pinNames.h"
-#include "Objects.h"
+#include "PinNames.h"
+#include "objects.h"
 #include "hal_api.h"
 #include "rtl8195a_gpio.h"
 

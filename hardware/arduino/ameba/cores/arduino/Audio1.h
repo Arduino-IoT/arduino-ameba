@@ -14,8 +14,7 @@
 
 
 #include "Arduino.h"
-//#include "Print.h"
-#include "dac1.h"
+#include "DAC1.h"
 
 #ifndef DWORD
 typedef uint32_t DWORD;

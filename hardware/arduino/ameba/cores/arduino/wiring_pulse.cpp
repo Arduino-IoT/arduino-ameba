@@ -24,8 +24,8 @@
  extern "C" {
 #endif
 
-#include "pinNames.h"
-#include "Objects.h"
+#include "PinNames.h"
+#include "objects.h"
 #include "hal_gpio.h"
 #include "gpio_api.h"
 #include "section_config.h"

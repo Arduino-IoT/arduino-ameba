@@ -19,8 +19,7 @@
 
 /* mbed includes */
 #include "mbed_error.h"
-//#include "mbed_interface.h"
-#include "us_ticker_api.h"
+#include "us_ticker.h"
 
 /* lwIP includes. */
 #include "lwip/opt.h"
