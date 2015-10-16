@@ -30,36 +30,15 @@ extern "C"{
 #include "hal_diag.h"
 
 
-// Constructors ////////////////////////////////////////////////////////////////
-// TODO: NeoJou : need to implement UART class for 
-//  when pmc / nvic is ready 
-
-#if 0
-#define UART1_TX    PD_3    // QC board J27[8]/EV board J4[19]: UART1, S0
-#define UART1_RX    PD_0    // QC board J27[2]/EV board J4[22]: UART1, S0
-
-#define UART0_TX    PC_3    // EV board J6[9]: UART0, S0
-#define UART0_RX    PC_0    // EV board J6[122]: UART0, S0
-#endif
-
-
-
 } // extern C
 
 
-//UARTClass::UARTClass( Uart* pUart, IRQn_Type dwIrq, uint32_t dwId, RingBuffer* pRx_buffer )
-//UARTClass::UARTClass( void* pUart, IRQn_Type dwIrq, uint32_t dwId, RingBuffer* pRx_buffer )
 UARTClass::UARTClass(IRQn_Type dwIrq, RingBuffer* pRx_buffer )
 {
 
-
 	_rx_buffer = pRx_buffer ;
 
-//	_pUart=pUart ;
 	_dwIrq=dwIrq ;
-//	_dwId=dwId ;
-
-
 }
 
 

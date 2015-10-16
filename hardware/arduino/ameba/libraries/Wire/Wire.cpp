@@ -34,10 +34,6 @@ extern
 _LONG_CALL_ u32
 DiagPrintf(const char *fmt, ...);
 
-extern u32 ConfigDebugErr;
-
-#define 	_DBG_MISC_          	0x40000000
-
 //i2c
 i2c_t i2cmaster_wire1;
 

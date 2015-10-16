@@ -170,8 +170,6 @@ void DACClass1::send16(uint16_t* buffer, unsigned int len)
 {
 	uint16_t *pBuffer;
 
-//NeoJou
-#if 1
 	for (int i=0; i< len ; i++ ) {
 		pBuffer = (uint16_t*)(&dac_buffer[dac_buffer_page][dac_current_pos++]);
 		*pBuffer = transform_dac_val(buffer[i]);
@@ -180,19 +178,6 @@ void DACClass1::send16(uint16_t* buffer, unsigned int len)
 	send((uint32_t*)&dac_buffer[dac_buffer_page][0], dac_current_pos);
 	dac_current_pos = 0;
 	dac_buffer_page = ( dac_buffer_page + 1 ) % MAX_DAC_BUFFER_NUM;
-
-
-#else
-	for (int i=0; i< len ; i++ ) {
-		pBuffer = (uint16_t*)(&dac_buffer[dac_buffer_page][dac_current_pos++]);
-		*pBuffer = transform_dac_val(buffer[i]);
-		if ( dac_current_pos >= MAX_DAC_BUFFER_SIZE ) {
-			send((uint32_t*)&dac_buffer[dac_buffer_page][0], MAX_DAC_BUFFER_SIZE);
-			dac_current_pos = 0;
-			dac_buffer_page = ( dac_buffer_page + 1 ) % MAX_DAC_BUFFER_NUM;
-		}
-	}
-#endif
 
 }
 

@@ -57,9 +57,13 @@ IMAGE2_TEXT_SECTION
 int main( void )
 {
 
-	ConfigDebugErr &= ~(_DBG_GDMA_|_DBG_DAC_);
-	ConfigDebugInfo&= ~(_DBG_GDMA_|_DBG_DAC_|_DBG_SPI_FLASH_);
-	ConfigDebugWarn&= ~(_DBG_GDMA_|_DBG_DAC_|_DBG_SPI_FLASH_);
+	//ConfigDebugErr &= ~(_DBG_GDMA_|_DBG_DAC_);
+	//ConfigDebugInfo&= ~(_DBG_GDMA_|_DBG_DAC_|_DBG_SPI_FLASH_);
+	//ConfigDebugWarn&= ~(_DBG_GDMA_|_DBG_DAC_|_DBG_SPI_FLASH_);
+	ConfigDebugErr = 0;
+	ConfigDebugInfo = 0;
+	ConfigDebugWarn = 0;
+
 	
 	init();
 

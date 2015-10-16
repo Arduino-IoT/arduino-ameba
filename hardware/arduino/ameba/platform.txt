@@ -12,12 +12,14 @@ version=1.6.1
 
 compiler.path={runtime.ide.path}/hardware/tools/gcc-arm-none-eabi-4.8.3-2014q1/bin/
 compiler.c.cmd=arm-none-eabi-gcc
-compiler.c.flags=-c -g -w -mcpu=cortex-m3 -mthumb -O2 -fno-short-enums -fno-common -fmessage-length=0 -Wall -fno-exceptions -ffunction-sections -fdata-sections -fomit-frame-pointer -MMD -MP
+#compiler.c.flags=-c -g -w -mcpu=cortex-m3 -mthumb -O2 -fno-short-enums -fno-common -fmessage-length=0 -Wall -fno-exceptions -ffunction-sections -fdata-sections -fomit-frame-pointer -MMD -MP
+compiler.c.flags=-c -g -w -mcpu=cortex-m3 -mthumb -O2 -fno-short-enums -fno-common -fmessage-length=0 -Wall -fno-exceptions -ffunction-sections -fdata-sections -fomit-frame-pointer -fno-short-enums -MMD -MP
 compiler.c.elf.cmd=arm-none-eabi-gcc
-compiler.c.elf.flags= -O2 -Wl,--gc-sections -mcpu=cortex-m3 -mthumb --specs=nano.specs
+compiler.c.elf.flags= -O2 -Wl,--gc-sections -mcpu=cortex-m3 -mthumb --specs=nano.specs 
 compiler.S.flags=-c -g -x assembler-with-cpp
 compiler.cpp.cmd=arm-none-eabi-g++
-compiler.cpp.flags=-c -g -w -O2 -mcpu=cortex-m3 -mthumb -fno-short-enums -fno-common -fmessage-length=0 -Wall -fno-exceptions -ffunction-sections -fdata-sections -fomit-frame-pointer -fno-rtti -MMD -MP
+#compiler.cpp.flags=-c -g -w -O2 -mcpu=cortex-m3 -mthumb -fno-short-enums -fno-common -fmessage-length=0 -Wall -fno-exceptions -ffunction-sections -fdata-sections -fomit-frame-pointer -fno-rtti -MMD -MP
+compiler.cpp.flags=-c -g -w -O2 -mcpu=cortex-m3 -mthumb -fno-short-enums -fno-common -fmessage-length=0 -Wall -fno-exceptions -ffunction-sections -fdata-sections -fomit-frame-pointer -fno-rtti -fno-short-enums -MMD -MP
 
 compiler.ar.cmd=arm-none-eabi-ar
 compiler.ar.flags=rcs
@@ -36,7 +38,8 @@ build.extra_flags=
 
 # These can be overridden in platform.local.txt
 compiler.c.extra_flags=
-compiler.c.elf.extra_flags= -Wl,--cref -Wl,--gc-sections -Wl,--entry=Reset_Handler -Wl,--unresolved-symbols=report-all -Wl,--warn-common 
+#compiler.c.elf.extra_flags= -Wl,--cref -Wl,--gc-sections -Wl,--entry=Reset_Handler -Wl,--unresolved-symbols=report-all -Wl,--warn-common 
+compiler.c.elf.extra_flags= -Wl,--cref -Wl,--gc-sections  -Wl,--entry=Reset_Handler -Wl,--no-enum-size-warning
 compiler.cpp.extra_flags=
 compiler.ar.extra_flags=
 compiler.elf2hex.extra_flags=
@@ -74,8 +77,8 @@ recipe.cpp.o.pattern="{compiler.path}{compiler.cpp.cmd}" {compiler.cpp.flags} -m
 recipe.ar.pattern="{compiler.path}{compiler.ar.cmd}" {compiler.ar.flags} {compiler.ar.extra_flags} "{build.path}/{archive_file}" "{object_file}"
 
 ## Combine gc-sections, archives, and objects
-#recipe.c.combine.pattern="{compiler.path}{compiler.c.elf.cmd}" {compiler.c.elf.flags} "-L{build.variant.path}/linker_scripts/gcc" "-T{build.variant.path}/{build.ldscript}" "-Wl,-Map={build.path}/{build.project_name}.map" {compiler.c.elf.extra_flags} -o "{build.path}/{build.project_name}.axf" "-L{build.path}" -Wl,--start-group {object_files} {sys_obj_files} "{build.path}/{archive_file}" "{build.variant.path}/{build.variant_system_lib}" -Wl,--end-group  -lstdc++ -lsupc++ -lm -lc -lgcc -lnosys
-recipe.c.combine.pattern="{compiler.path}{compiler.c.elf.cmd}" {compiler.c.elf.flags} "-L{build.variant.path}/linker_scripts/gcc" "-T{build.variant.path}/{build.ldscript}" "-Wl,-Map={build.path}/{build.project_name}.map" {compiler.c.elf.extra_flags} -o "{build.path}/target.axf" "-L{build.path}" -Wl,--start-group {object_files} {sys_obj_files} "{build.path}/{archive_file}" "{build.variant.path}/{build.variant_system_lib}" -Wl,--end-group  -lstdc++ -lsupc++ -lm -lc -lgcc -lnosys
+#recipe.c.combine.pattern="{compiler.path}{compiler.c.elf.cmd}" {compiler.c.elf.flags} "-L{build.variant.path}/linker_scripts/gcc" "-T{build.variant.path}/{build.ldscript}" "-Wl,-Map={build.path}/{build.project_name}.map" {compiler.c.elf.extra_flags} -o "{build.path}/{build.project_name}.axf" "-L{build.path}" -Wl,--start-group {object_files} {sys_obj_files}"{build.path}/{archive_file}" "{build.variant.path}/{build.variant_system_lib}"  -Wl,--end-group -lstdc++ -lsupc++ -lm -lc -lgcc -lnosys
+recipe.c.combine.pattern="{compiler.path}{compiler.c.elf.cmd}" {compiler.c.elf.flags} "-L{build.variant.path}/linker_scripts/gcc" "-T{build.variant.path}/{build.ldscript}" "-Wl,-Map={build.path}/{build.project_name}.map" {compiler.c.elf.extra_flags} -o "{build.path}/target.axf" "-L{build.path}" -Wl,--start-group {object_files} {sys_obj_files}  -Wl,--end-group "{build.path}/{archive_file}" "{build.variant.path}/{build.variant_system_lib}" -lstdc++ -lsupc++ -lm -lc -lgcc -lnosys
 
 ## Create nm map
 recipe.nm.pattern=cp "{build.path}/{build.project_name}.axf" "{build.path}/target.axf"
@@ -91,10 +94,9 @@ recipe.objcopy.eep.pattern=
 recipe.objcopy.hex.pattern=
 
 ## Compute size
-#recipe.size.pattern="{compiler.path}{compiler.size.cmd}" -A "{build.path}/{build.project_name}.axf"
+recipe.size.pattern="{compiler.path}{compiler.size.cmd}" -A "{build.path}/target.axf"
 #recipe.size.regex=\.text\s+([0-9]+).*
-recipe.size.pattern=
-recipe.size.regex=
+recipe.size.regex=^(?:\.ram_image1.text|\.ram_image2.text|\.image3)\s+([0-9]+).*
 
 
 # Ameba Uploader tools

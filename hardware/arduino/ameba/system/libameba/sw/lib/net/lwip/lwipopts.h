@@ -118,9 +118,6 @@
 #define LWIP_PLATFORM_BYTESWAP      1
 
 
-//NeoJou
-#if 1 // for Ameba
-
 
 /* MEM_SIZE: the size of the heap memory. If the application will send
 a lot of data that needs to be copied, this should be set high. */
@@ -142,48 +139,5 @@ a lot of data that needs to be copied, this should be set high. */
 #define LWIP_ALLOW_MEM_FREE_FROM_OTHER_CONTEXT 1
 #define LWIP_NETIF_STATUS_CALLBACK  1
 
-#else // for original settings
-
-#if LWIP_TRANSPORT_ETHERNET
-
-/* MSS should match the hardware packet size */
-#define TCP_MSS                     1460
-#define TCP_SND_BUF                 (2 * TCP_MSS)
-#define TCP_WND                     (2 * TCP_MSS)
-#define TCP_SND_QUEUELEN            (2 * TCP_SND_BUF/TCP_MSS)
-
-// Broadcast
-#define IP_SOF_BROADCAST            1
-#define IP_SOF_BROADCAST_RECV       1
-
-#define LWIP_BROADCAST_PING         1
-
-#define LWIP_CHECKSUM_ON_COPY       1
-
-#define LWIP_NETIF_HOSTNAME         1
-#define LWIP_NETIF_STATUS_CALLBACK  1
-#define LWIP_NETIF_LINK_CALLBACK    1
-
-#elif LWIP_TRANSPORT_PPP
-
-#define TCP_SND_BUF                     (3 * 536)
-#define TCP_WND                         (2 * 536)
-
-#define LWIP_ARP 0
-
-#define PPP_SUPPORT 1
-#define CHAP_SUPPORT                    1
-#define PAP_SUPPORT                     1
-#define PPP_THREAD_STACKSIZE            4*192
-#define PPP_THREAD_PRIO 0
-
-#define MAXNAMELEN                      64     /* max length of hostname or name for auth */
-#define MAXSECRETLEN                    64
-
-#else
-#error A transport mechanism (Ethernet or PPP) must be defined
-#endif
-
-#endif
 
 #endif /* LWIPOPTS_H_ */
