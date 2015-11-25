@@ -15,7 +15,7 @@
  #include <WiFi1.h>
  #include "WiFiServer1.h"
 
-char ssid[] = "YourAPName";     // the name of your network
+char ssid[] = "NeoTPLink";     // the name of your network
 int status = WL_IDLE_STATUS;     // the Wifi radio's status
 
 WiFiServer1 server(7);
