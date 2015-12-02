@@ -65,28 +65,28 @@ extern uint32_t pulseIn( uint32_t ulPin, uint32_t state, uint32_t timeout )
 	  return 0;
 	}
 
-	pGpio_pin_t = &gpio_pin_struct[ulPin];
+	//pGpio_pin_t = &gpio_pin_struct[ulPin];
 
-	pGpio_t = &gpio_pin_struct[ulPin].sGpio_t;
+	//pGpio_t = &gpio_pin_struct[ulPin].sGpio_t;
 
 	
 	// wait for any previous pulse to end
 	start_ticks = us_ticker_read();
-	while (gpio_read(pGpio_t) == state) {
+	while (digitalRead(ulPin) == state) {
 		cur_ticks = us_ticker_read();
 		if ( cur_ticks - start_ticks > timeout ) return 0;
 	}
 
 	// wait for the pulse to start
 	
-	while (gpio_read(pGpio_t) != state) {
+	while ( digitalRead(ulPin) != state) {
 		cur_ticks = us_ticker_read();
 		if ( cur_ticks - start_ticks > timeout ) return 0;
 	}
 	
 	// wait for the pulse to stop
 	start_ticks = us_ticker_read();
-	while (gpio_read(pGpio_t) == state) {
+	while ( digitalRead(ulPin) == state) {
 		cur_ticks = us_ticker_read();
 		if ( cur_ticks - start_ticks > timeout ) return 0;
 	}
